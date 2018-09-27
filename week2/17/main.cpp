@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     for (size_t index = 0; index != length; ++index)
         value |= (number_string[length - index - 1] - '0') << index;
 
-    size_t newValue = value ?
+    size_t newValue = ror ?
         // shift the word right by 1 and then insert the bit that dropped of at the left
         newValue = (value >> 1) & ~(1 << (length - 1)) | ((value & 1) << (length - 1)) :
         // shift the word left by 1 and then insert the 
