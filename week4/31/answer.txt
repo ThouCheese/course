@@ -1,0 +1,12 @@
+`Encapsulation` is the process of combining sematically related data 
+into single entities. In C++, this is most commonly achieved through 
+classes and struct.
+
+`Data hiding` is the process where the interface of a class does not 
+expose the internal data, but rather the functionality derived from that 
+data. This allows the user to focus solely on using the class without 
+being bothered by the actual implementation of the class.
+
+The implementation is irrelevant because of the above, that is, the 
+purpose of a class is to not reveal the implementation to the user.
+
