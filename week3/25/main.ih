@@ -10,7 +10,12 @@ struct Subject
     size_t order;
 };
 
+void populate_sorted(size_t const n_people, 
+                     Subject *subjects);
+
+void print_subjects(Subject const *subjects, size_t const size);
+
 void insert(Subject *subjects, 
-            Subject &&subject,
+            Subject subject,
             size_t position, 
             size_t length);
