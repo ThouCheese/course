@@ -1,10 +1,7 @@
-#include "main.h"
+#include "main.ih"
 
 void print_all(Person const people[], size_t const size)
 {
     for (size_t index = 0; index != size; ++index)
-    {   
-        Person person = people[index];
-        person.insert(std::cout);
-    }
+        people[index].insert(std::cout);
 }

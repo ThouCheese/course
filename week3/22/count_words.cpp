@@ -1,17 +1,14 @@
-#include "main.h"
+#include "main.ih"
 
-void count_words()
+size_t count_words()
 {
-    size_t result = 0;
-    while (true) 
+    size_t word_count = 0;
+    string line;
+    while (getline(std::cin, line)) 
     {
-        std::string line;
-        if (not getline(std::cin, line))
-            break;
         size_t words_in_string = 0;
         bool was_space = true;
         for (char ch : line)
-        {
             if (ch == ' ')
             {
                 if (not was_space)
@@ -19,8 +16,8 @@ void count_words()
             }
             else
                 was_space = false;
-        }
-        result += words_in_string + not was_space;
+        word_count += words_in_string + not was_space;
     }
-    std::cout << result << '\n';
+    return word_count;
 }
+    

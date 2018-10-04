@@ -1,4 +1,4 @@
-#include "main.h"
+#include "main.ih"
 
 ReturnValues combine(int argc, char const *argv[])
 {

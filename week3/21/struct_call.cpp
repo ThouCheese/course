@@ -1,4 +1,4 @@
-#include "main.h"
+#include "main.ih"
 
 bool structCall(int argc, char const *argv[])
 {
@@ -8,6 +8,6 @@ bool structCall(int argc, char const *argv[])
         cerr << "Usage: program <number> [arguments]\n";
         return false;
     }
-    cout << "Value at " << local.nr << " is " << local.value << '\n';
+    print_struct(local);
     return true;
 }

@@ -1,14 +1,10 @@
-#include "main.h"
+#include "main.ih"
 
-void count_chars()
+size_t count_chars()
 {
-    size_t result = 0;
-    while (true) 
-    {
-        std::string line;
-        if (not getline(std::cin, line))
-            break;
-        result += line.length() + 1;
-    }
-    std::cout << result << '\n';
+    size_t char_count = 0;
+    string line;
+    while (getline(std::cin, line)) 
+        char_count += line.length() + !cin.eof();
+    return char_count;
 }

@@ -1,0 +1,12 @@
+#include <iostream>
+
+using namespace std;
+
+extern char **environ;
+
+
+size_t get_env_len();
+string *get_env_list(size_t const length, string *list);
+
+void quicksort(string list[], size_t left, size_t right);
+size_t partition(string list[], size_t left, size_t right);

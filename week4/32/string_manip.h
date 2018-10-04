@@ -1,3 +1,6 @@
+#ifndef STRING_MANIP_H
+#define STRING_MANIP_H
+
 class StringManip
 {
     std::string &d_source;
@@ -17,3 +20,5 @@ class StringManip
 
         std::string copy() const;       // return a copy of d_source
 };
+
+#endif // STRING_MANIP_H

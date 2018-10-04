@@ -1,0 +1,747 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper, margin=1in]{geometry}
+
+\usepackage{minted}
+\large
+\title{C++ Assignment 3}
+\begin{document}
+\begin{titlepage}
+    \begin{center}
+        \line(1,0){300}\\
+        [0.65cm]
+        \huge{\bfseries Assignment III}\\
+        \line(1,0){300}\\
+        \textsc{\Large C++ Course Part I}\\
+        \textsc{\LARGE \today}\\
+        [5.5cm]     
+    \end{center}
+    \begin{flushright}
+        \textsc{\Large L. Wester\\S2755351}\\
+        [0.5cm]
+    \end{flushright}
+\end{titlepage}
+\section*{Exercise 20}
+\subsection*{/find\_period.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+bool contains_period(size_t argc, char *argv[])
+{
+    for (size_t index = 0; index != argc; ++index)
+        if (std::string{argv[index]}.find('.') != std::string::npos)
+            return true;
+    return false;
+}
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main(int argc, char *argv[])
+{
+    --argc;
+    ++argv;
+    if (contains_period(argc, argv))
+        cout << sum(argc, argv, 0.0) << '\n';
+    else
+        cout << sum(argc, argv, 0) << '\n';
+}
+
+\end{minted}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <iostream>
+
+using namespace std;
+
+bool contains_period(size_t argc, char *argv[]);
+
+double sum(int argc, char *argv[], double result);
+
+int sum(int argc, char *argv[], int result);
+
+\end{minted}
+\subsection*{/sum1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+double sum(int argc, char *argv[], double result)
+{
+    for (size_t index = 0; index != argc; ++index)
+        result += stod(argv[index]);
+    return result;
+}
+
+\end{minted}
+\subsection*{/sum2.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int sum(int argc, char *argv[], int result)
+{
+    for (size_t index = 0; index != argc; ++index)
+        result += stoi(argv[index]);
+    return result;
+}
+
+\end{minted}
+
+\section*{Exercise 21}
+\subsection*{/bound\_call.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+void boundCall(int argc, char const *argv[])
+{
+    print_struct(combine(argc, argv));
+}
+
+\end{minted}
+\subsection*{/combine.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+ReturnValues combine(int argc, char const *argv[])
+{
+    ReturnValues result{false, 0, ""};
+    if (argc == 1)
+        return result;
+    result.nr = std::stoul(argv[1]);
+    if (argc < result.nr or result.nr == 0)
+        return result;
+    result.value = argv[result.nr - 1];
+    result.ok = true;
+    return result;
+}
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main(int argc, char const *argv[])
+{
+    if (not structCall(argc, argv))
+        return 1;
+    boundCall(argc, argv);
+}
+
+\end{minted}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <iostream>
+
+using namespace std;
+
+struct ReturnValues
+{
+    bool ok;
+    size_t nr;
+    string value;
+};
+
+void print_struct(ReturnValues const &values);
+
+bool structCall(int argc, char const *argv[]);
+
+void boundCall(int argc, char const *argv[]);
+
+ReturnValues combine(int argc, char const *argv[]);
+
+\end{minted}
+\subsection*{/print\_struct.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+void print_struct(ReturnValues const &values)
+{
+    cout << "Value at " << values.nr << " is " << values.value << '\n';
+}
+\end{minted}
+\subsection*{/struct\_call.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+bool structCall(int argc, char const *argv[])
+{
+    ReturnValues local = combine(argc, argv);
+    if (not local.ok)
+    {
+        cerr << "Usage: program <number> [arguments]\n";
+        return false;
+    }
+    print_struct(local);
+    return true;
+}
+
+\end{minted}
+
+\section*{Exercise 22}
+\subsection*{/count\_chars.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+size_t count_chars()
+{
+    size_t char_count = 0;
+    string line;
+    while (getline(std::cin, line)) 
+        char_count += line.length() + !cin.eof();
+    return char_count;
+}
+\end{minted}
+\subsection*{/count\_lines.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+size_t count_lines()
+{
+    size_t line_count = 0;
+    string line;
+    while (getline(std::cin, line)) 
+        line_count += 1;
+    return line_count;
+}
+
+\end{minted}
+\subsection*{/count\_words.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+size_t count_words()
+{
+    size_t word_count = 0;
+    string line;
+    while (getline(std::cin, line)) 
+    {
+        size_t words_in_string = 0;
+        bool was_space = true;
+        for (char ch : line)
+            if (ch == ' ')
+            {
+                if (not was_space)
+                    words_in_string += 1;
+            }
+            else
+                was_space = false;
+        word_count += words_in_string + not was_space;
+    }
+    return word_count;
+}
+    
+\end{minted}
+\subsection*{/err.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+bool err(int const argc, char const *argv[])
+{
+    if (argc != 2)
+        cerr << "Usage: Wc [-c, -w, -l]\n";
+    else if (argv[1][0] != '-')
+        cerr << "Expected '-'\n";
+    else
+        return false;
+    return true;
+}
+
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main(int const argc, char const *argv[])
+{
+    if (err(argc, argv))
+        return 1;
+    size_t count = 0;
+    switch (argv[1][1]) {
+        case 'c':
+            count = count_chars();
+            break;
+        case 'w':
+            count = count_words();
+            break;
+        case 'l':
+            count = count_lines();
+            break;
+        default:
+            cerr << "Unknown option " << argv[1][1] << '\n';
+            return 1;
+    }
+    cout << count << '\n';
+}
+
+\end{minted}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <iostream>
+
+using namespace std;
+
+bool err(int const argc, char const *argv[]);
+
+size_t count_chars();
+size_t count_words();
+size_t count_lines();
+
+\end{minted}
+
+\section*{Exercise 23}
+\subsection*{/get\_env\_len.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+size_t get_env_len()
+{
+    size_t length = 0;
+    for (char **env = environ; *env; ++env)
+        ++length;
+    return length;
+}
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main()
+{
+    size_t env_length = get_env_len();
+    string list[env_length];
+    for (size_t index = 0; index != env_length; ++index)
+        list[index] = string{environ[index]};
+
+    quicksort(list, 0, env_length - 1);
+
+    for (size_t index = 0; index != env_length; ++index)
+        cout << list[index] << '\n';
+}
+
+\end{minted}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <iostream>
+
+using namespace std;
+
+extern char **environ;
+
+
+size_t get_env_len();
+string *get_env_list(size_t const length, string *list);
+
+void quicksort(string list[], size_t left, size_t right);
+size_t partition(string list[], size_t left, size_t right);
+
+\end{minted}
+\subsection*{/partition.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+size_t partition(string list[], size_t left, size_t right)
+{
+    string pivot = list[left];
+    size_t pivot_new = left;
+    for (size_t index = left + 1; index != right + 1; ++index)
+    {
+        size_t char_pos = 0;
+        while (tolower(list[index][char_pos]) == tolower(pivot[char_pos]))
+            ++char_pos;
+
+        if (list[index][char_pos] < pivot[char_pos])
+            swap(list[++pivot_new], list[index]);
+    }
+    swap(list[pivot_new], list[left]);
+    return pivot_new;
+}
+\end{minted}
+\subsection*{/quicksort.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+void quicksort(string list[], size_t left, size_t right)
+{
+    if (left < right)
+    {
+        size_t mid = partition(list, left, right);
+        quicksort(list, left, mid - 1);
+        quicksort(list, mid + 1, right);
+    }
+}
+\end{minted}
+\subsection*{/swap.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+void swap(string *string1, string *string2)
+{
+    string *temp = string1;
+    string1 = string2;
+    string2 = temp;
+}
+\end{minted}
+
+\section*{Exercise 25}
+\subsection*{/insert.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+void insert(Subject *subjects, 
+            Subject subject,
+            size_t position, 
+            size_t length)
+{
+    for (size_t index = length - 1; index != position;)
+    {
+        --index;
+        subjects[index + 1] = subjects[index];
+    }
+    subjects[position] = subject;
+}
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main(int argc, char const *argv[])
+{
+    if (argc != 3)
+    {
+        cerr << "Usage: program n_people seed";
+        return 1;
+    }
+    size_t const n_people = std::stoul(argv[1]);
+    size_t const seed = std::stoul(argv[2]);
+    srandom(seed);
+    Subject *subjects = new Subject[n_people];
+    populate_sorted(n_people, subjects);
+    print_subjects(subjects, n_people);
+}
+
+\end{minted}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <iostream>
+#include <stdlib.h>
+#include <vector>
+
+using namespace std;
+
+struct Subject
+{
+    bool brown;
+    size_t order;
+};
+
+void populate_sorted(size_t const n_people, 
+                     Subject *subjects);
+
+void print_subjects(Subject const *subjects, size_t const size);
+
+void insert(Subject *subjects, 
+            Subject subject,
+            size_t position, 
+            size_t length);
+
+\end{minted}
+\subsection*{/populate\_sorted.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+void populate_sorted(size_t const n_people,
+                     Subject *subjects)
+{
+    for (size_t n_person = 0; n_person != n_people; ++n_person)
+    {
+        size_t index = 0;
+        for (; index != n_person; ++index)
+            if (not subjects[index].brown)
+                break;
+        // cout << index << '\n';
+        insert(subjects, Subject{random() % 2, n_person}, index, n_people);
+    }
+}
+
+\end{minted}
+\subsection*{/print\_subjects.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+void print_subjects(Subject const *subjects, size_t const size)
+{
+    for (size_t index = 0; index != size; ++index)
+        std::cout 
+            << (index + 1) << ": "
+            << (subjects[index].brown ? "brown (" : "blue (")
+            << (subjects[index].order) << ")\n";
+}
+\end{minted}
+
+\section*{Exercise 27}
+\subsection*{/combis.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+void combis(size_t idx, bool bits[])
+{
+    size_t cur_total = 0;
+    for (size_t index = 0; index != idx; ++index)
+        cur_total += bits[index];
+    for (size_t index = idx; index != nTotal; ++index)
+    {
+        if (cur_total + (nTotal - index) < nRequired)
+            break;
+        bits[index] = true;
+        combis(index + 1, bits);
+        bits[index] = false;
+    }
+    if (cur_total >= nRequired)
+        print(bits);
+}
+
+\end{minted}
+\subsection*{/data.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+size_t nTotal;
+size_t nRequired;
+
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main(int argc, char const *argv[])
+{
+    if (argc != 3)
+    {
+        cerr << "Usage: program nTotal nRequired\n";
+        return 1;
+    }
+    nTotal = std::stoul(argv[1]);
+    nRequired = std::stoul(argv[2]);
+    if (nTotal < nRequired) 
+    {
+        cerr << "nTotal must be greater than nRequired\n";
+        return 1;
+    }
+    bool bits[nTotal];
+    combis(0, bits);
+}
+
+\end{minted}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <iostream>
+
+using namespace std;
+
+extern size_t nTotal;
+extern size_t nRequired;
+
+void combis(size_t index, bool bits[]);
+void print(bool bits[]);
+
+\end{minted}
+\subsection*{/print.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+void print(bool bits[])
+{
+    for (size_t index = 0; index != nTotal; ++index)
+        if (bits[index])
+            std::cout << index;
+    std::cout << '\n';
+}
+
+\end{minted}
+
+\section*{Exercise 28}
+\subsection*{/estimate\_b.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+// expecting the value to compute (lhs + rhs) for, and the a-term (i.e., square root estimate)
+// of all but the least significant pair of digits of that value.
+
+#include "main.ih"
+
+size_t estimateB(size_t pq, size_t lhs)
+{
+    return (pq - 100 * lhs * lhs) / (20 * lhs);
+}
+
+\end{minted}
+\subsection*{/lookup\_sqrt.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+size_t lookupSqrt(size_t num)
+{
+    for (size_t index = 0; index != 10; ++index)
+        if (index * index > num)
+            return index - 1;
+
+    // // Alternative method using switch:
+
+    // switch(num)
+    // {
+    //       default:
+    //           return 0;
+    //     case 1 ... 3:
+    //         return 1;
+    //     case 4 ... 8:
+    //         return 2;
+    //     case 9 ... 15:
+    //         return 3;
+    //     case 16 ... 24:
+    //         return 4;
+    //     case 25 ... 35:
+    //         return 5;
+    //     case 36 ... 48:
+    //         return 6;
+    //     case 49 ... 63:
+    //         return 7;
+    //     case 64 ... 80:
+    //         return 8;
+    //     case 81 ... 99:
+    //         return 9;
+    // }
+}
+
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main()
+{
+    while(true)
+    {
+        cout << "? ";
+        string text;
+        if (not getline(cin, text))
+            break;
+        size_t input = stoul(text);
+        size_t sqrt = sqrtGn(input);
+        cout << "sqrt: " << sqrt << " (" << sqrt * sqrt << ")\n";
+    }
+}
+\end{minted}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+size_t sqrtGn(size_t input);
+size_t lookupSqrt(size_t num);
+size_t estimateB(size_t pq, size_t lhs);
+size_t nextSqrt(size_t pq, size_t lhs);
+\end{minted}
+\subsection*{/next\_sqrt.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+size_t nextSqrt(size_t pq, size_t lhs)
+{
+    size_t best = estimateB(pq, lhs);
+    size_t sqrt = 10 * lhs + best;
+    while (sqrt * sqrt > pq)
+        sqrt = 10 * lhs + --best;
+    return sqrt;
+}
+
+\end{minted}
+\subsection*{/sqrt\_gn.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+size_t sqrtGn(size_t input)
+{
+    if (input / 100 == 0)
+        return lookupSqrt(input);
+    else
+    {
+        size_t test = sqrtGn(input / 100);
+        size_t a = nextSqrt(input, test);
+        return a;
+    }
+}
+\end{minted}
+
+\section*{Exercise 30}
+\subsection*{/call\_ref.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.h"
+
+void callRef(string const &prog)
+{
+    for (size_t idx = 0; idx < 10000000; ++idx)
+        fun2(prog);
+}
+\end{minted}
+\subsection*{/call\_value.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.h"
+
+void callValue(string const &prog)
+{
+    for (size_t idx = 0; idx < 10000000; ++idx)
+        fun(prog);
+}
+\end{minted}
+\subsection*{/fun1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.h"
+
+void fun(string s)
+{
+    size_t sum = 0;
+    for (size_t idx = 0; idx < s.length(); ++idx)
+        sum += s[idx];
+}
+
+\end{minted}
+\subsection*{/fun2.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.h"
+
+void fun2(string const &s)
+{
+    size_t sum = 0;
+    for (size_t idx = 0; idx < s.length(); ++idx)
+        sum += s[idx];
+}
+
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.h"
+
+int main(int argc, char *argv[])
+{
+    callValue(argv[0]);
+    callRef(argv[0]);
+}
+\end{minted}
+\subsection*{/main.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <string>
+#include <iostream>
+
+using namespace std;
+
+void fun(string s);
+void fun2(string const &s);
+void callValue(string const &prog);
+void callRef(string const &prog);
+
+\end{minted}
+
+
+\end{document}

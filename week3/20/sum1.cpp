@@ -1,6 +1,8 @@
-#include "main.h"
+#include "main.ih"
 
-double sum(double num1, double num2)
+double sum(int argc, char *argv[], double result)
 {
-    return num1 + num2;
+    for (size_t index = 0; index != argc; ++index)
+        result += stod(argv[index]);
+    return result;
 }

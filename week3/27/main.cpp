@@ -1,10 +1,10 @@
-#include "main.h"
+#include "main.ih"
 
 int main(int argc, char const *argv[])
 {
     if (argc != 3)
     {
-        cerr << "Usage: program nTotal nRequired";
+        cerr << "Usage: program nTotal nRequired\n";
         return 1;
     }
     nTotal = std::stoul(argv[1]);
@@ -14,6 +14,6 @@ int main(int argc, char const *argv[])
         cerr << "nTotal must be greater than nRequired\n";
         return 1;
     }
-    bool *bits = new bool[nTotal];
-    combis(-1, bits);
+    bool bits[nTotal];
+    combis(0, bits);
 }

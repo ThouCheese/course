@@ -1,7 +1,0 @@
-#include "operand.ih"
-
-Operand::
-{
-    
-}
-    

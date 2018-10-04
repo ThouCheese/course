@@ -1,6 +1,8 @@
-#include "main.h"
+#include "main.ih"
 
-int sum(int num1, int num2)
+int sum(int argc, char *argv[], int result)
 {
-    return num1 + num2;
+    for (size_t index = 0; index != argc; ++index)
+        result += stoi(argv[index]);
+    return result;
 }
