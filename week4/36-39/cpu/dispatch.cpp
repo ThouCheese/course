@@ -1,6 +1,6 @@
 #include "cpu.ih"
 
-void CPU::dispatch(Opcode const opcode)
+void CPU::dispatch(Opcode opcode)
 {
     switch (opcode) {
         case Opcode::ERR:
@@ -27,7 +27,6 @@ void CPU::dispatch(Opcode const opcode)
         case Opcode::DSP:
             dsp();
             break;
-        default: //unreachable
-            exit(10);
+        // unreachable  
     }
 }

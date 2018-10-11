@@ -1,0 +1,8 @@
+1. The main difference is that an array cannot be incremented the way a pointer 
+can to get the next element. Arrays are immutable, pointers are mutable.
+
+2. References cannot be re-assigned, point to NULL, be explicitly dereferenced 
+or be incremented to the next value in memory, whereas pointers can do all these
+things.
+
+3. 

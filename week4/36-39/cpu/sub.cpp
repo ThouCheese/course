@@ -1,5 +1,7 @@
 #include "cpu.ih"
 
+// takes two operands, substracts the rhs from the lhs and stores the 
+// result in the lhs
 void CPU::sub()
 {
     if (not two_operands())

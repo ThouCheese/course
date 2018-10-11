@@ -10,8 +10,10 @@ bool is_register(string const &word)
 bool is_value(string const &word)
 {
     for (char chr : word)
+    {
         if (not isdigit(chr))
             return false;
+    }
     return true;
 }
 

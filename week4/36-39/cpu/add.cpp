@@ -1,5 +1,7 @@
 #include "cpu.ih"
 
+// takes two operands and computes their sum, then stores the result in the
+// lhs
 void CPU::add()
 {
     if (not two_operands())

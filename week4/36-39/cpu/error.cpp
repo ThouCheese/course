@@ -3,5 +3,5 @@
 bool CPU::error() const
 {
     std::cout << "syntax error\n";
-    return false;
+    return false; // convenient in the caller function
 }

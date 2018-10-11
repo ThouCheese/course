@@ -1,0 +1,54 @@
+----------------------------------------------------------------------------
+  definition:         rewrite: 
+----------------------------------------------------------------------------
+  int x[8];           x[4]            
+
+pointer notation:  *(x + 4)
+       semantics:  x + 4 points to the location of the 4th int beyond x.
+                   That element is reached using the dereference operator (*)
+
+----------------------------------------------------------------------------
+  int x[8];           x[3] = x[2];
+
+pointer notation:  *(x + 3) = *(x + 2);
+       semantics:  Copy the int at location x + 3 to the location x + 2
+----------------------------------------------------------------------------
+  char *argv[8];      cout << argv[2];
+
+pointer notation:  cout << *(argv + 2);
+       semantics:  Take the 2nd element beyond x, deference it and print it
+----------------------------------------------------------------------------
+  int x[8];           &x[10] - &x[3];
+ 
+pointer notation:  &*(x + 10) - &*(x + 3);
+       semantics:  take the address of the value at the 10th location beyond
+                   x, then subtract the address of the value at the 10th location beyond x.
+                   Equivalently: subtract 10 from 3
+----------------------------------------------------------------------------
+  char *argv[8];      argv[0]++;
+
+pointer notation:  (*argv)++
+       semantics:  Take the first char* that argv points to and increment it
+                   beyond its first value, effectively leaving out the first
+                   char
+----------------------------------------------------------------------------
+  char *argv[8];      argv++[0];
+
+pointer notation:  *(argv++)
+       semantics:  Take the first char string that argv points to, then 
+                   increment argv beyond that string to leave it out
+----------------------------------------------------------------------------
+  char *argv[8];      ++argv[0];
+
+pointer notation:  *++argv
+       semantics:  First increment argv to forget the first string it
+                   contains, then take the now first previously second 
+                   string
+----------------------------------------------------------------------------
+  char **argv;        ++argv[0][2];
+
+pointer notation:  *(*(++argv) + 2)
+       semantics:  Increment argv to forget about its first string, then 
+                   take now fist, previously second string, then, from that
+                   string take the third character 
+----------------------------------------------------------------------------

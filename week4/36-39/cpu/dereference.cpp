@@ -1,7 +1,9 @@
 #include "cpu.ih"
 
-int CPU::dereference(Operand const operand) const
+// takes an operand of any type and returns that value that it represents
+int CPU::dereference(Operand operand) const
 {
+
     switch (operand.type) {
         case OperandType::VALUE:
             return operand.value;

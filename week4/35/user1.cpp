@@ -1,8 +1,9 @@
 #include "user.ih"
 
 User::User()
+    :
+        d_valid(false)
 {
-    d_valid = false;
     passwd *data = getpwent();
     if (not data)
         return;

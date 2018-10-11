@@ -1,5 +1,7 @@
 #include "cpu.ih"
 
+// computes the result of the division of two operands, and stores
+// the result in the left hand operand
 void CPU::div()
 {
     if (not two_operands())

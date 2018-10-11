@@ -2,6 +2,7 @@
 #define TOKENIZER_H
 
 #include "../operand/operand.h"
+#include "../enums/enums.h"
 #include <string>
 
 class Tokenizer 
@@ -11,7 +12,7 @@ class Tokenizer
     size_t d_mem_operands;
 
 public:
-    Tokenizer();
+    Tokenizer() = default;
     Opcode opcode();
     Operand operand();
     void reset();

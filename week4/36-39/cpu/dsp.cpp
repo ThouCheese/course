@@ -1,5 +1,6 @@
 #include "cpu.ih"
 
+// takes one operand and displays it
 void CPU::dsp()
 {
     if (not one_operand())

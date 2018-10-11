@@ -1,0 +1,6 @@
+#include "charinfo.ih"
+
+CharInfo::
+{
+    
+}

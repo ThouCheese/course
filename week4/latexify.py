@@ -1,6 +1,23 @@
+import os
 from pathlib import Path
 
 path = Path('.')
+
+
+def sort(path):
+    if path.suffix == '.txt':
+        return '0' + path.name
+    elif path.suffix == '.ih':
+        return '1' + path.name
+    elif path.suffix == '.h':
+        return '2' + path.name
+    elif path.suffix == '.cpp':
+        return '3' + path.name
+    # elif path.name == 'frame' or path.name == 'program':
+        # do nothing
+    return '4' + path.name
+    raise ValueError(f'Unknown file extension on {path.name}')
+
 
 
 def parse_file(path, pathname):
@@ -22,7 +39,7 @@ def parse_file(path, pathname):
 
 def append_files(path, pathname=''):
     result = ''
-    for subpath in sorted(path.iterdir()):
+    for subpath in sorted(path.iterdir(), key=sort):
         if subpath.is_dir():
             result += append_files(subpath, pathname + '/' + subpath.name)
         else:

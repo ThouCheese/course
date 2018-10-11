@@ -1,5 +1,6 @@
 #include "cpu.ih"
 
+// multiplies two operands and stores the result in the lhs
 void CPU::mul()
 {
     if (not two_operands())

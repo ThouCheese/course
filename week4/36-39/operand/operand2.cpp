@@ -1,6 +1,6 @@
 #include "operand.ih"
 
-Operand::Operand(OperandType const type, int const value)
+Operand::Operand(OperandType type, int value)
     :
         type{type},
         value{value}
