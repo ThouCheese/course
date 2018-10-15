@@ -2,6 +2,7 @@
 
 void showChar(char ch)
 {
+    cout << "char \'";
     switch (ch) {
         case '\t':
             cout << "\\t";
@@ -12,5 +13,5 @@ void showChar(char ch)
         default:
             cout << ch;
     }
-    
+    cout << '\'';
 }

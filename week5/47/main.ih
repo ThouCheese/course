@@ -1,0 +1,10 @@
+#include "../45-46/strings/strings.h"
+#include "../45-46/filter/filter.h"
+#include <string>
+
+extern char **environ;
+
+using namespace std;
+
+
+void string_swap(Strings &string1, Strings &string2);

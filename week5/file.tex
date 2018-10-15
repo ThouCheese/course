@@ -1,0 +1,1008 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper, margin=1in]{geometry}
+
+\usepackage{minted}
+\large
+\title{C++ Assignment 3}
+\begin{document}
+\begin{titlepage}
+    \begin{center}
+        \line(1,0){300}\\
+        [0.65cm]
+        \huge{\bfseries Assignment III}\\
+        \line(1,0){300}\\
+        \textsc{\Large C++ Course Part I}\\
+        \textsc{\LARGE \today}\\
+        [5.5cm]     
+    \end{center}
+    \begin{flushright}
+        \textsc{\Large L. Wester\\S2755351}\\
+        [0.5cm]
+    \end{flushright}
+\end{titlepage}
+\section*{Exercise 40}
+1. The main difference is that an array cannot be incremented the way a pointer 
+can to get the next element. Arrays are immutable, pointers are mutable.
+
+2. References cannot be re-assigned, point to NULL, be explicitly dereferenced 
+or be incremented to the next value in memory, whereas pointers can do all these
+things.
+
+3. 
+
+
+
+
+
+
+
+
+
+4. The pointer arithmetic is a small subset of arithmetic operations that are allowed on numbers. It is restricted to ++, --, + and -. These operations are allowed on pointers. It also concerns itself with which type of operands are allowed and whether these operations return a number or another pointer.
+
+5. It is preffered to access an element using a pointer as opposed to an index expression because pointers are generally faster.
+
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <iostream>
+
+int main()
+{
+    char *ptr = "hoi\n";
+    char arr[] = "hoi\n";
+    ptr[1] = '0';
+    arr[1] = '0';
+    ++arr;
+    std::cout << *ptr << '\n';
+    std::cout << *arr << '\n';
+}
+\end{minted}
+
+\section*{Exercise 41}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <iostream>
+
+extern char **environ;
+
+int main(int argc, char *argv[])
+{
+    int offset = environ - argv;
+
+    for (char **arg_ptr = argv; *arg_ptr and *(arg_ptr + offset); ++arg_ptr)
+        std::cout << *(arg_ptr + offset) << '\n';
+
+    for (char **env_ptr = environ; *env_ptr and *(env_ptr - offset); ++env_ptr)
+        std::cout << *(env_ptr - offset) << '\n';
+}
+
+\end{minted}
+
+\section*{Exercise 42}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount/charcount.h"
+#include <iostream>
+
+using namespace std;
+
+void showChar(char ch);
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main()
+{
+    CharCount counter;
+    counter.count(std::cin);
+    for (size_t index = 0; index != counter.info().nChar; ++index)
+    {
+        showChar(counter.info().ptr[index].ch);
+        cout << " found " << counter.info().ptr[index].count << " times\n";
+    }
+}
+\end{minted}
+\subsection*{/show\_char.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+void showChar(char ch)
+{
+    cout << "char \'";
+    switch (ch) {
+        case '\t':
+            cout << "\\t";
+        break;
+        case '\n':
+            cout << "\\n";
+        break;
+        default:
+            cout << ch;
+    }
+    cout << '\'';
+}
+\end{minted}
+\subsection*{/char/char.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "char.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/char/char.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef CHAR_H
+#define CHAR_H
+
+#include <cstddef>
+
+struct Char 
+{
+    char ch;
+    size_t count;
+
+    Char() = default;
+    Char(char ch, size_t count);
+};
+
+#endif // CHAR_H
+
+\end{minted}
+\subsection*{/char/char1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "char.ih"
+
+Char::Char(char ch, size_t count)
+    :
+        ch(ch),
+        count(count)
+{}
+\end{minted}
+
+\subsection*{/charcount/charcount.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/charcount/charcount.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef CHARCOUNT_H
+#define CHARCOUNT_H
+
+#include "../enums/action.h"
+#include "../charinfo/charinfo.h"
+#include <iostream>
+
+class CharCount 
+{
+    size_t d_work_index = 0;
+    CharInfo d_char_info;
+public:
+    void count(std::istream &in);
+    CharInfo const &info() const;
+
+private:
+    Action locate(char ch);
+    void add(char ch);
+    void insert(char ch);
+    void append(char ch);
+};
+
+#endif // CHARCOUNT_H
+
+\end{minted}
+\subsection*{/charcount/add.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.ih"
+
+void CharCount::add(char ch)
+{
+    d_char_info.ptr[d_work_index].count++;
+}
+\end{minted}
+\subsection*{/charcount/append.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.ih"
+
+void CharCount::append(char ch)
+{
+    Char *old = d_char_info.ptr;
+    if (not old)
+    {
+        d_char_info.nChar = 1;
+        d_char_info.ptr = new Char[1];
+        d_char_info.ptr[0] = Char(ch, 1);
+        return;
+    }
+    d_char_info.ptr = new Char[++d_char_info.nChar];
+    for (size_t index = 0; index != d_char_info.nChar - 1; ++index)
+        d_char_info.ptr[index] = old[index];
+    delete[] old;
+    d_char_info.ptr[d_char_info.nChar - 1] = Char(ch, 1);
+}
+
+\end{minted}
+\subsection*{/charcount/count.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.ih"
+
+void CharCount::count(std::istream &in)
+{
+    char ch;
+    cin >> noskipws;
+
+    while (cin >> ch)
+    {
+        Action action = locate(ch);
+        if (action == Action::INSERT)
+            insert(ch);
+        else if (action == Action::APPEND)
+            append(ch);
+        else if (action == Action::ADD)
+            add(ch);
+    }
+}
+
+\end{minted}
+\subsection*{/charcount/info.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.ih"
+
+CharInfo const &CharCount::info() const
+{
+    return d_char_info;
+}
+\end{minted}
+\subsection*{/charcount/insert.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.ih"
+
+void CharCount::insert(char ch)
+{
+    Char *old = d_char_info.ptr;
+    d_char_info.ptr = new Char[++d_char_info.nChar];
+
+    size_t index;
+    for (index = 0; index != d_work_index; ++index)
+        d_char_info.ptr[index] = old[index];
+    d_char_info.ptr[d_work_index] = Char(ch, 1);
+    while (++index != d_char_info.nChar)
+        d_char_info.ptr[index] = old[index - 1];
+
+    delete[] old;
+}
+\end{minted}
+\subsection*{/charcount/locate.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.ih"
+
+Action CharCount::locate(char ch)
+{
+    if (not d_char_info.ptr)
+        return Action::APPEND;
+    for (size_t index = 0; index != d_char_info.nChar; ++index)
+    {
+        char cur_char = d_char_info.ptr[index].ch;
+        if (cur_char == ch)
+        {
+            d_work_index = index;
+            return Action::ADD;
+        }
+        else if (cur_char > ch)
+        {
+            d_work_index = index;
+            return Action::INSERT;
+        }
+    }
+    return Action::APPEND;
+}
+\end{minted}
+
+\subsection*{/charinfo/charinfo.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charinfo.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/charinfo/charinfo.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef CHARINFO_H
+#define CHARINFO_H
+
+#include "../char/char.h"
+#include "../enums/action.h"
+
+struct CharInfo 
+{
+    size_t nChar = 0;
+    Char *ptr = 0;
+};
+
+#endif // CHARINFO_H
+\end{minted}
+
+\subsection*{/enums/action.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef ACTION_H
+#define ACTION_H
+
+enum Action
+{
+    INSERT,
+    ADD,
+    APPEND,
+};
+
+#endif // ACTION_H
+\end{minted}
+
+
+\section*{Exercise 43}
+----------------------------------------------------------------------------
+  definition:         rewrite: 
+----------------------------------------------------------------------------
+  int x[8];           x[4]            
+
+pointer notation:  *(x + 4)
+       semantics:  x + 4 points to the location of the 4th int beyond x.
+                   That element is reached using the dereference operator (*)
+
+----------------------------------------------------------------------------
+  int x[8];           x[3] = x[2];
+
+pointer notation:  *(x + 3) = *(x + 2);
+       semantics:  Copy the int at location x + 3 to the location x + 2
+----------------------------------------------------------------------------
+  char *argv[8];      cout << argv[2];
+
+pointer notation:  cout << *(argv + 2);
+       semantics:  Take the 2nd element beyond x, deference it and print it
+----------------------------------------------------------------------------
+  int x[8];           &x[10] - &x[3];
+ 
+pointer notation:  &*(x + 10) - &*(x + 3);
+       semantics:  take the address of the value at the 10th location beyond
+                   x, then subtract the address of the value at the 10th location beyond x.
+                   Equivalently: subtract 10 from 3
+----------------------------------------------------------------------------
+  char *argv[8];      argv[0]++;
+
+pointer notation:  (*argv)++
+       semantics:  Take the first char* that argv points to and increment it
+                   beyond its first value, effectively leaving out the first
+                   char
+----------------------------------------------------------------------------
+  char *argv[8];      argv++[0];
+
+pointer notation:  *(argv++)
+       semantics:  Take the first char string that argv points to, then 
+                   increment argv beyond that string to leave it out
+----------------------------------------------------------------------------
+  char *argv[8];      ++argv[0];
+
+pointer notation:  *++argv
+       semantics:  First increment argv to forget the first string it
+                   contains, then take the now first previously second 
+                   string
+----------------------------------------------------------------------------
+  char **argv;        ++argv[0][2];
+
+pointer notation:  *(*(++argv) + 2)
+       semantics:  Increment argv to forget about its first string, then 
+                   take now fist, previously second string, then, from that
+                   string take the third character 
+----------------------------------------------------------------------------
+\subsection*{/test.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <iostream>
+
+int main()
+{
+    char *argv[8] = {"12345678", 
+                     "hoi doeg",
+                     "hallo ga"};
+    argv++[0];
+    std::cout << *(++argv) << '\n';
+}
+\end{minted}
+
+\section*{Exercise 44}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <iostream>
+
+using namespace std;
+
+void inv_identity(int row[][10]);
+
+\end{minted}
+\subsection*{/inv\_identity.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+void inv_identity(int row[][10])
+{
+    for (int (*rowPtr)[10] = row; rowPtr != row + 10; ++rowPtr)
+    {
+        for (int *colPtr = *rowPtr, *mid = *rowPtr + (rowPtr - row); 
+             colPtr != *rowPtr + 10; 
+             ++colPtr)
+        {
+            *colPtr = colPtr == mid ? 0 : 1;
+        }
+    }
+}
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main()
+{
+    int square[10][10];
+    int (*row)[10] = square;
+    inv_identity(square);
+    for (size_t irow = 0; irow != 10; ++irow)
+    {
+        for (size_t icolumn = 0; icolumn != 10; ++icolumn)
+            cout << square[irow][icolumn] << ' ';
+        cout << '\n';
+    }
+}
+\end{minted}
+
+\section*{Exercise 45-46}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings/strings.h"
+#include "filter/filter.h"
+#include <iostream>
+
+extern char **environ;
+
+using namespace std;
+
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main()
+{
+    Strings str(environ);
+    Filter filter(str);
+    filter.display();
+}
+\end{minted}
+\subsection*{/filter/filter.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "filter.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/filter/filter.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef FILTER_H
+#define FILTER_H
+
+#include "../strings/strings.h"
+
+class Filter 
+{
+    Strings const &d_strings; // store a reference because a value is woefully inefficient
+    size_t d_index = 0;
+public:
+    Filter(Strings const &strings);
+    void display();
+private:
+    bool getline(std::string &line);
+};
+
+#endif // FILTER_H
+
+\end{minted}
+\subsection*{/filter/display.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "filter.ih"
+
+void Filter::display()
+{
+    size_t line_num = 0;
+    string line;
+    while (true)
+    {
+        if (not this->getline(line))
+            return; // all lines were empty
+        if (line.find_first_not_of(" \t") != string::npos) // non empty
+            break;
+    }
+    cout << line << '\n';
+
+    size_t n_empty = 0; // number of empty lines
+    while (this->getline(line))
+        if (line.find_first_not_of(" \t") == string::npos)
+            ++n_empty;
+        else
+        {
+            cout << string(n_empty, '\n') << line << '\n';
+            n_empty = 0;
+        }
+}
+
+\end{minted}
+\subsection*{/filter/filter1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "filter.ih"
+
+Filter::Filter(Strings const &strings)
+    :
+        d_strings(strings)
+{}
+
+\end{minted}
+\subsection*{/filter/getline.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "filter.ih"
+
+bool Filter::getline(string &line)
+{
+    if (d_index == d_strings.size())
+        return false;
+    line = d_strings.at(d_index++);
+    return true;
+}
+\end{minted}
+
+\subsection*{/strings/strings.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/strings/strings.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef STRINGS_H
+#define STRINGS_H
+
+#include "../stringsdata/stringsdata.h"
+#include <string>
+#include <istream>
+
+class Strings 
+{
+    size_t d_size;                     // number of stored strings
+    std::string *d_str;                // pointer to `d_str` strings
+    std::string d_empty;
+public:
+    Strings();
+    Strings(std::istream &in);
+    Strings(char **env);
+    Strings(int argc, char *argv[]);
+    size_t size() const;
+    std::string *data();
+    std::string const &at(size_t index) const;
+    std::string &at(size_t index);
+    StringsData release(); // danger! leaks!
+    void add(std::string the_next_string);
+
+private:
+    std::string &at_backdoor(size_t index) const;
+    void realloc(size_t new_size);
+};
+
+#endif // STRINGS_H
+
+\end{minted}
+\subsection*{/strings/add.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+void Strings::add(string the_next_string)
+{
+    realloc(d_size + 1);
+    d_str[d_size - 1] = the_next_string;
+}
+\end{minted}
+\subsection*{/strings/at.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+string &Strings::at(size_t index)
+{
+    return at_backdoor(index);
+}
+\end{minted}
+\subsection*{/strings/at\_backdoor.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+string &Strings::at_backdoor(size_t index) const
+{
+    // return index < d_size ? &d_str[index] : &d_empty;
+    static string empty;
+    return index < d_size ? d_str[index] : empty; 
+}
+
+\end{minted}
+\subsection*{/strings/at\_const.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+string const &Strings::at(size_t index) const
+{
+    return at_backdoor(index);
+}
+\end{minted}
+\subsection*{/strings/data.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+string *Strings::data()
+{
+    return d_str;
+}
+\end{minted}
+\subsection*{/strings/realloc.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+void Strings::realloc(size_t new_size)
+{
+    string *old = d_str;
+    d_str = new string[new_size];
+    if (old)
+        for (size_t index = 0; index != d_size and index != new_size; ++index)
+            d_str[index] = old[index];
+    d_size = new_size;
+    if (old)
+        delete[] old;
+}
+\end{minted}
+\subsection*{/strings/release.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+StringsData Strings::release()
+{
+    StringsData data(d_size, d_str);
+    Strings();
+    return data;
+}
+\end{minted}
+\subsection*{/strings/size.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+size_t Strings::size() const
+{
+    return d_size;   
+}
+\end{minted}
+\subsection*{/strings/strings1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings()
+    :
+        d_size(0),
+        d_str(0)
+{}
+
+\end{minted}
+\subsection*{/strings/strings2.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings(istream &in)
+    :
+        Strings()
+{
+    string line;
+    while (getline(in, line))
+    {
+        realloc(d_size + 1);
+        d_str[d_size - 1] = line;
+    }
+}
+\end{minted}
+\subsection*{/strings/strings3.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings(char **env)
+    :
+        Strings()
+{
+    while (*env)
+        add(*(env++));
+}
+\end{minted}
+\subsection*{/strings/strings4.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings(int argc, char *argv[])
+    :
+        d_size(argc),
+        d_str(new string[argc])
+{
+    for (size_t index = 0; index != static_cast<size_t>(argc); ++index)
+        d_str[index] = argv[index];
+}
+\end{minted}
+
+\subsection*{/stringsdata/stringsdata.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "stringsdata.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/stringsdata/stringsdata.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef STRINGSDATA_H
+#define STRINGSDATA_H
+
+#include <cstddef>
+#include <string>
+
+struct StringsData 
+{
+    size_t size;
+    std::string *ptr;
+
+    StringsData(size_t size, std::string *ptr);
+};
+
+#endif // STRINGSDATA_H
+
+\end{minted}
+\subsection*{/stringsdata/stringsdata1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "stringsdata.ih"
+
+StringsData::StringsData(size_t size, string *ptr)
+    :
+        size(size),
+        ptr(ptr)
+{}
+
+\end{minted}
+
+
+\section*{Exercise 47}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "../45-46/strings/strings.h"
+#include "../45-46/filter/filter.h"
+#include <string>
+
+extern char **environ;
+
+using namespace std;
+
+
+void string_swap(Strings &string1, Strings &string2);
+
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main()
+{
+    int argc = 3;
+    char *argv[] = {"hoi", "wat", "niet"};
+    Strings strings1{environ};
+    Strings strings2{argc, argv};
+    string_swap(strings1, strings2);
+    Filter filter1{strings1};
+    Filter filter2{strings2};
+    filter1.display();
+    filter2.display();
+}
+\end{minted}
+\subsection*{/string\_swap.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+void string_swap(Strings &strings1, Strings &strings2)
+{
+    
+}
+\end{minted}
+
+\section*{Exercise 48}
+1
+[luuk@arch_laptop 48]$ tree
+.
+├── answer.txt
+├── CLASSES
+├── data
+│   ├── data.h
+│   ├── data.ih
+│   ├── display.cc
+│   └── read.cc
+├── data.in
+├── icmconf
+├── main.cc
+└── main.ih
+
+1 directory, 10 files
+[luuk@arch_laptop 48]$ cd data
+[luuk@arch_laptop data]$ g++ -c *.cc 
+[luuk@arch_laptop data]$ ar rvs libdata.a *.o
+ar: creating libdata.a
+a - display.o
+a - read.o
+[luuk@arch_laptop data]$ cd ..
+[luuk@arch_laptop 48]$ g++ -c main.cc 
+[luuk@arch_laptop 48]$ g++ main.o data/libdata.a
+[luuk@arch_laptop 48]$ ./program
+12
+Object 1: value is: 12
+
+2. If I uncomment all occurrences of d_data, we indeed get the following
+[luuk@arch_laptop 48]$ cd  data
+[luuk@arch_laptop data]$ g++ -c *.cc
+[luuk@arch_laptop data]$ ar rvs libdata.a *.o
+ar: creating libdata.a
+a - display.o
+a - read.o
+[luuk@arch_laptop data]$ cd ..
+[luuk@arch_laptop data]$ g++ main.o data/libdata.a -o program
+[luuk@arch_laptop 48]$ ./program
+Segmentation fault (core dumped)
+
+Now we migrate to a pimpl implementation.
+
+<code here>
+
+[luuk@arch_laptop 48]$ tree
+.
+├── answer.txt
+├── CLASSES
+├── data
+│   ├── data1.cc
+│   ├── data.h
+│   ├── data.ih
+│   ├── dataimpl
+│   │   ├── dataimpl.h
+│   │   ├── dataimpl.ih
+│   │   ├── display.cc
+│   │   └── read.cc
+│   ├── display.cc
+│   └── read.cc
+├── data.in
+├── icmconf
+├── main.cc
+├── main.ih
+└── program
+
+2 directories, 16 files
+[luuk@arch_laptop 48]$ cd data
+[luuk@arch_laptop data]$ cd dataimpl/
+[luuk@arch_laptop dataimpl]$ g++ -c *.cc
+[luuk@arch_laptop dataimpl]$ cd ..
+[luuk@arch_laptop data]$ g++ -c *.cc
+[luuk@arch_laptop data]$ ar rvs libdata.a *.o dataimpl/*.o
+ar: creating libdata.a
+a - data1.o
+a - display.o
+a - read.o
+a - dataimpl/display.o
+a - dataimpl/read.o
+[luuk@arch_laptop data]$ cd ..
+[luuk@arch_laptop 48]$ g++ -c main.cc
+[luuk@arch_laptop 48]$ g++ main.o data/libdata.a -o program
+[luuk@arch_laptop 48]$ ./program
+12
+Object 1: value is: 12
+
+Now comment in d_data.
+
+[luuk@arch_laptop 48]$ cd data/dataimpl/
+[luuk@arch_laptop dataimpl]$ g++ -c *.cc
+[luuk@arch_laptop dataimpl]$ cd ..
+[luuk@arch_laptop data]$ g++ -c *.cc
+[luuk@arch_laptop data]$ ar rvs libdata.a *.o dataimpl/*.o
+r - data1.o
+r - display.o
+r - read.o
+r - dataimpl/display.o
+r - dataimpl/read.o
+[luuk@arch_laptop data]$ cd ..
+[luuk@arch_laptop 48]$ g++ main.o data/libdata.a -o program
+[luuk@arch_laptop 48]$ ./program
+12
+Object 1: value is: 12
+
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <iostream>
+#include <string>
+
+#include "data/data.h"
+
+using namespace std;
+
+\end{minted}
+\subsection*{/data/data.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "data.h"
+
+#include <iostream>
+
+using namespace std;
+
+
+\end{minted}
+\subsection*{/data/data.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef INCLUDED_DATA_
+#define INCLUDED_DATA_
+
+#include "dataimpl/dataimpl.h"
+
+class Data
+{
+    DataImpl *d_data_impl;
+
+    public:
+        Data();
+        bool read();
+        void display() const; 
+};
+        
+#endif
+
+\end{minted}
+\subsection*{/data/dataimpl/dataimpl.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "dataimpl.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/data/dataimpl/dataimpl.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef DATAIMPL_H
+#define DATAIMPL_H
+
+#include <string>
+
+class DataImpl 
+{
+    // std::string d_text;
+    int d_value = 0;
+
+    public:
+        bool read();
+        void display() const; 
+};
+
+#endif // DATAIMPL_H
+
+\end{minted}
+
+
+
+
+\end{document}

@@ -1,0 +1,103 @@
+1
+[luuk@arch_laptop 48]$ tree
+.
+├── answer.txt
+├── CLASSES
+├── data
+│   ├── data.h
+│   ├── data.ih
+│   ├── display.cc
+│   └── read.cc
+├── data.in
+├── icmconf
+├── main.cc
+└── main.ih
+
+1 directory, 10 files
+[luuk@arch_laptop 48]$ cd data
+[luuk@arch_laptop data]$ g++ -c *.cc 
+[luuk@arch_laptop data]$ ar rvs libdata.a *.o
+ar: creating libdata.a
+a - display.o
+a - read.o
+[luuk@arch_laptop data]$ cd ..
+[luuk@arch_laptop 48]$ g++ -c main.cc 
+[luuk@arch_laptop 48]$ g++ main.o data/libdata.a
+[luuk@arch_laptop 48]$ ./program
+12
+Object 1: value is: 12
+
+2. If I uncomment all occurrences of d_data, we indeed get the following
+[luuk@arch_laptop 48]$ cd  data
+[luuk@arch_laptop data]$ g++ -c *.cc
+[luuk@arch_laptop data]$ ar rvs libdata.a *.o
+ar: creating libdata.a
+a - display.o
+a - read.o
+[luuk@arch_laptop data]$ cd ..
+[luuk@arch_laptop data]$ g++ main.o data/libdata.a -o program
+[luuk@arch_laptop 48]$ ./program
+Segmentation fault (core dumped)
+
+Now we migrate to a pimpl implementation.
+
+<code here>
+
+[luuk@arch_laptop 48]$ tree
+.
+├── answer.txt
+├── CLASSES
+├── data
+│   ├── data1.cc
+│   ├── data.h
+│   ├── data.ih
+│   ├── dataimpl
+│   │   ├── dataimpl.h
+│   │   ├── dataimpl.ih
+│   │   ├── display.cc
+│   │   └── read.cc
+│   ├── display.cc
+│   └── read.cc
+├── data.in
+├── icmconf
+├── main.cc
+├── main.ih
+└── program
+
+2 directories, 16 files
+[luuk@arch_laptop 48]$ cd data
+[luuk@arch_laptop data]$ cd dataimpl/
+[luuk@arch_laptop dataimpl]$ g++ -c *.cc
+[luuk@arch_laptop dataimpl]$ cd ..
+[luuk@arch_laptop data]$ g++ -c *.cc
+[luuk@arch_laptop data]$ ar rvs libdata.a *.o dataimpl/*.o
+ar: creating libdata.a
+a - data1.o
+a - display.o
+a - read.o
+a - dataimpl/display.o
+a - dataimpl/read.o
+[luuk@arch_laptop data]$ cd ..
+[luuk@arch_laptop 48]$ g++ -c main.cc
+[luuk@arch_laptop 48]$ g++ main.o data/libdata.a -o program
+[luuk@arch_laptop 48]$ ./program
+12
+Object 1: value is: 12
+
+Now comment in d_data.
+
+[luuk@arch_laptop 48]$ cd data/dataimpl/
+[luuk@arch_laptop dataimpl]$ g++ -c *.cc
+[luuk@arch_laptop dataimpl]$ cd ..
+[luuk@arch_laptop data]$ g++ -c *.cc
+[luuk@arch_laptop data]$ ar rvs libdata.a *.o dataimpl/*.o
+r - data1.o
+r - display.o
+r - read.o
+r - dataimpl/display.o
+r - dataimpl/read.o
+[luuk@arch_laptop data]$ cd ..
+[luuk@arch_laptop 48]$ g++ main.o data/libdata.a -o program
+[luuk@arch_laptop 48]$ ./program
+12
+Object 1: value is: 12

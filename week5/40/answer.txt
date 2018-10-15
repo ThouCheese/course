@@ -6,3 +6,15 @@ or be incremented to the next value in memory, whereas pointers can do all these
 things.
 
 3. 
+
+
+
+
+
+
+
+
+
+4. The pointer arithmetic is a small subset of arithmetic operations that are allowed on numbers. It is restricted to ++, --, + and -. These operations are allowed on pointers. It also concerns itself with which type of operands are allowed and whether these operations return a number or another pointer.
+
+5. It is preffered to access an element using a pointer as opposed to an index expression because pointers are generally faster.
