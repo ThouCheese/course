@@ -1,0 +1,4 @@
+#include "charinfo.h"
+#include <iostream>
+
+using namespace std;

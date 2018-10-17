@@ -1,0 +1,14 @@
+1. placement new/placement delete
+Does not allocate new memory, expects memory to be prealloacted. Useful for 
+copying data to a new loaction, where the new location is allocated already,
+but initialization at that location is not necessary. e.g.:
+```
+// snippet
+string *mem = get_lotsa_memory();
+for (size_t index = 0; index != some_size; ++index)
+    new(ptr + index * sizeof(string)) string("hi!");
+// usage
+for (size_t index = 0; index != some_size; ++index)
+    mem[index].~string;
+```
+

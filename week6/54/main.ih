@@ -1,0 +1,6 @@
+#include "sort/sort.ih"
+#include <iostream>
+
+using namespace std;
+
+int increasing(string **string1, string **string2);

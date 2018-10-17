@@ -1,0 +1,6 @@
+#include "stringsdata.ih"
+
+StringsData::
+{
+    
+}

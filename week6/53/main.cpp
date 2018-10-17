@@ -2,7 +2,7 @@
 
 int main()
 {
-    Strings str(environ);
+    Strings str(cin);
     Filter filter(str);
-    filter.display();     
+    filter.display();
 }
