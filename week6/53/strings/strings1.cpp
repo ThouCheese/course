@@ -3,5 +3,5 @@
 Strings::Strings()
 {
     d_capacity = 1;
-    reserve(1);
+    resize(1);
 }

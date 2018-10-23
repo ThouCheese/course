@@ -5,16 +5,12 @@ void CharCount::count(std::istream &in)
     char ch;
     cin >> noskipws;
 
+    static void (CharCount::*fn_list[3])(char) = 
+        {&CharCount::insert, &CharCount::append, &CharCount::add};
+
     while (cin >> ch)
     {
         Action action = locate(ch);
-        if (action == Action::INSERT)
-            insert(ch);
-        else if (action == Action::APPEND)
-            append(ch);
-        else if (action == Action::ADD)
-            add(ch);
-        else
-            cout << "oh noo!\n";
+        (this->*fn_list[action])(ch);
     }
 }

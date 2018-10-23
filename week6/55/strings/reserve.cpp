@@ -6,7 +6,7 @@ void Strings::reserve(size_t capacity)
 {
     string *old = d_str;
 
-    d_str = raw_strings(capacity);
+    d_str = raw_memory(capacity);
     if (old)
     {
         for (size_t index = 0; 

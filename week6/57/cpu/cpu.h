@@ -59,12 +59,12 @@ private:
     void neg();             // negate a value
     void dsp();             // display a value
 
-    int static value_fn(Operand val, int registers[NREGISTERS], Memory &mem);
-    int static register_fn(Operand val, int registers[NREGISTERS], Memory &mem);
-    int static memory_fn(Operand val, int registers[NREGISTERS], Memory &mem);
+    int value_fn(Operand const &val);
+    int register_fn(Operand const &val);
+    int memory_fn(Operand const &val);
 
-    void static register_store_fn(Operand const &lhs, int value, int registers[NREGISTERS], Memory &memory);
-    void static memory_store_fn(Operand const &lhs, int value, int registers[NREGISTERS], Memory &memory);
+    void register_store_fn(Operand const &lhs, int value);
+    void memory_store_fn(Operand const &lhs, int value);
 };
         
 #endif

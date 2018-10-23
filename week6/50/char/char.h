@@ -6,10 +6,10 @@
 struct Char 
 {
     char ch;
-    size_t count;
+    size_t count = 1;
 
     Char() = default;
-    Char(char ch, size_t count);
+    Char(char ch);
 };
 
 #endif // CHAR_H

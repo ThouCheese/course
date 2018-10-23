@@ -7,9 +7,8 @@
 
 class CharCount 
 {
-    size_t d_work_index = 0;
+    size_t d_work_index = 0; // set by locate, used by insert and add
     size_t d_capacity = 10;
-    size_t theoretical_max = 1000;
     CharInfo d_char_info;
 public:
     CharCount();

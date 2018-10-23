@@ -6,8 +6,9 @@ bool CPU::execute(Opcode opcode)
         return false;
     if (opcode == Opcode::ERR)
         return error();
-    void (CPU::*fn_list[7])() = {&CPU::mov, &CPU::add, &CPU::sub, 
-                                 &CPU::mul, &CPU::div, &CPU::neg, &CPU::dsp};
+    static void (CPU::*fn_list[7])() = {&CPU::mov, &CPU::add, &CPU::sub, 
+                                        &CPU::mul, &CPU::div, &CPU::neg, 
+                                        &CPU::dsp};
     (this->*fn_list[static_cast<size_t>(opcode)])();
     return true;                // continue
 }

@@ -5,8 +5,7 @@
 void Strings::resize(size_t capacity)
 {
     reserve(capacity);
-    if (capacity >= d_capacity)
-        for (size_t index = d_capacity; index != capacity; ++index)
-            new(d_str + index) string;
+    for (size_t index = d_capacity; index < capacity; ++index)
+        new(d_str + index) string;
     d_capacity = capacity;  
 }

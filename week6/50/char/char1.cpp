@@ -1,7 +1,6 @@
 #include "char.ih"
 
-Char::Char(char ch, size_t count)
+Char::Char(char ch)
     :
-        ch(ch),
-        count(count)
+        ch(ch)
 {}

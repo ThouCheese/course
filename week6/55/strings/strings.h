@@ -9,7 +9,7 @@ class Strings
 {
     size_t d_size = 0;                    // number of stored strings
     size_t d_capacity = 0;
-    std::string *d_str = 0;               // pointer to `d_str` *string's
+    std::string *d_str = 0;               // pointer to internal data
 public:
     Strings();
     Strings(std::istream &in);
@@ -17,7 +17,6 @@ public:
     Strings(int argc, char *argv[]);
     ~Strings();
     size_t size() const;
-    std::string *data();
     std::string const &at(size_t index) const;
     std::string &at(size_t index);
     StringsData release(); // danger! leaks!
@@ -26,11 +25,13 @@ public:
     size_t capacity() const;
 
 private:
+    std::string *data();
+
     // replaces the body of `Strings(char **env)` for reuse
     void init(int argc, char **argv);
     void reserve(size_t capacity);
     void resize(size_t capacity);
-    std::string *raw_strings(size_t capacity) const;
+    static std::string *raw_memory(size_t capacity);
     void destroy();
     void ensure_capacity();
 
