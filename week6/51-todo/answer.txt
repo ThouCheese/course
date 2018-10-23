@@ -1,14 +1,13 @@
-1. placement new/placement delete
-Does not allocate new memory, expects memory to be prealloacted. Useful for 
-copying data to a new loaction, where the new location is allocated already,
-but initialization at that location is not necessary. e.g.:
-```
-// snippet
-string *mem = get_lotsa_memory();
-for (size_t index = 0; index != some_size; ++index)
-    new(ptr + index * sizeof(string)) string("hi!");
-// usage
-for (size_t index = 0; index != some_size; ++index)
-    mem[index].~string;
-```
-
+New: \\
+\begin{enumerate}
+    \item new / new[]: To allocate memory of any data type, for instance: int *p = new int; Used when we need a pointer to persistent data, that does not get destroyed as the position that created it goes out of scope.
+    \item new(placement) / new(placement)[]: Takes an already allocated piece of memory and initializes it.
+    \item operator new / operator new[]: Allocates a new piece of memory without initializing it.
+\end{enumerate}
+With every variant of operator new we need a corresponding delete.\\
+Delete:\\
+\begin{enumerate}
+    \item delete p / delete p[]: delete all memory and return it to the os.
+    \item there is not corresponding deletion operator to new(placement), as it does not allocate memory. Instead, call the destructor.
+    \item operator delete / operator delete[]: returns the referred memory to the os without calling the destructor.
+\end{enumerate}

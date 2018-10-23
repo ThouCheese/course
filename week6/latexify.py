@@ -30,7 +30,7 @@ def clean_file(content):
         if line == '```':
             if is_code:
                 line = '\\begin{minted}[frame=lines, linenos, fontsize=\\large]{c++}\n'
-            else
+            else:
                 line = '\\end{minted}'
         result += line
 

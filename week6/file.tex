@@ -1,0 +1,2002 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper, margin=1in]{geometry}
+
+\usepackage{minted}
+\large
+\title{C++ Assignment 3}
+\begin{document}
+\begin{titlepage}
+    \begin{center}
+        \line(1,0){300}\\
+        [0.65cm]
+        \huge{\bfseries Assignment III}\\
+        \line(1,0){300}\\
+        \textsc{\Large C++ Course Part I}\\
+        \textsc{\LARGE \today}\\
+        [5.5cm]     
+    \end{center}
+    \begin{flushright}
+        \textsc{\Large L. Wester\\S2755351}\\
+        [0.5cm]
+    \end{flushright}
+\end{titlepage}
+\section*{Exercise 50}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount/charcount.h"
+#include <iostream>
+
+using namespace std;
+
+void showChar(char ch);
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main()
+{
+    CharCount counter;
+    counter.count(std::cin);
+    for (size_t index = 0; index != counter.info().nChar; ++index)
+    {
+        showChar(counter.info().ptr[index].ch);
+        cout << " found " << counter.info().ptr[index].count << " times\n";
+    }
+    cout << "capacity was " << counter.capacity() << '\n';
+}
+
+\end{minted}
+\subsection*{/show\_char.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+void showChar(char ch)
+{
+    cout << '\'';
+    switch (ch) {
+        case '\t':
+            cout << "\\t";
+        break;
+        case '\n':
+            cout << "\\n";
+        break;
+        default:
+            cout << ch;
+    }
+    cout << '\'';
+}
+\end{minted}
+\subsection*{/char/char.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "char.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/char/char.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef CHAR_H
+#define CHAR_H
+
+#include <cstddef>
+
+struct Char 
+{
+    char ch;
+    size_t count;
+
+    Char() = default;
+    Char(char ch, size_t count);
+};
+
+#endif // CHAR_H
+
+\end{minted}
+\subsection*{/char/char1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "char.ih"
+
+Char::Char(char ch, size_t count)
+    :
+        ch(ch),
+        count(count)
+{}
+\end{minted}
+
+\subsection*{/charcount/charcount.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/charcount/charcount.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef CHARCOUNT_H
+#define CHARCOUNT_H
+
+#include "../enums/action.h"
+#include "../charinfo/charinfo.h"
+#include <iostream>
+
+class CharCount 
+{
+    size_t d_work_index = 0;
+    size_t d_capacity = 10;
+    size_t theoretical_max = 1000;
+    CharInfo d_char_info;
+public:
+    CharCount();
+    ~CharCount();
+    void count(std::istream &in);
+    CharInfo const &info() const;
+    size_t capacity() const;
+
+private:
+    Action locate(char ch);
+    void add(char ch);
+    void insert(char ch);
+    void append(char ch);
+    Char *raw_capacity(size_t capacity) const; // leaky!
+    void enlarge();
+};
+
+#endif // CHARCOUNT_H
+
+\end{minted}
+\subsection*{/charcount/add.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.ih"
+
+void CharCount::add(char ch)
+{
+    d_char_info.ptr[d_work_index].count++;
+}
+\end{minted}
+\subsection*{/charcount/append.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.ih"
+
+void CharCount::append(char ch)
+{
+    if (++d_char_info.nChar == d_capacity)
+        enlarge();
+    d_char_info.ptr[d_char_info.nChar - 1] = Char(ch, 1);
+}
+
+\end{minted}
+\subsection*{/charcount/capacity.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.ih"
+
+size_t CharCount::capacity() const
+{
+    return d_capacity;
+}
+\end{minted}
+\subsection*{/charcount/charcount1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.ih"
+
+CharCount::CharCount()
+    :
+        d_char_info()
+{
+    d_char_info.ptr = raw_capacity(d_capacity); 
+}
+\end{minted}
+\subsection*{/charcount/count.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.ih"
+
+void CharCount::count(std::istream &in)
+{
+    char ch;
+    cin >> noskipws;
+
+    while (cin >> ch)
+    {
+        Action action = locate(ch);
+        if (action == Action::INSERT)
+            insert(ch);
+        else if (action == Action::APPEND)
+            append(ch);
+        else if (action == Action::ADD)
+            add(ch);
+        else
+            cout << "oh noo!\n";
+    }
+}
+
+\end{minted}
+\subsection*{/charcount/destructor.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.ih"
+
+CharCount::~CharCount()
+{
+    for (size_t index = 0; index != d_char_info.nChar; ++index)
+        d_char_info.ptr[index].~Char();
+    operator delete(d_char_info.ptr);
+}
+\end{minted}
+\subsection*{/charcount/enlarge.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.ih"
+
+void CharCount::enlarge()
+{
+    Char *old = d_char_info.ptr;
+    d_char_info.ptr = raw_capacity(d_capacity * 2);
+
+    for (size_t index = 0; index != d_capacity; ++index)
+    {
+        d_char_info.ptr[index] = old[index];
+        old[index].~Char();
+    }
+    operator delete(old);
+    d_capacity *= 2;
+}
+\end{minted}
+\subsection*{/charcount/info.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.ih"
+
+CharInfo const &CharCount::info() const
+{
+    return d_char_info;
+}
+\end{minted}
+\subsection*{/charcount/insert.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.ih"
+
+void CharCount::insert(char ch)
+{
+    if (++d_char_info.nChar == d_capacity)
+        enlarge();
+    for (size_t index = d_capacity; --index != d_work_index;)
+        d_char_info.ptr[index] = d_char_info.ptr[index - 1];
+    d_char_info.ptr[d_work_index] = Char(ch, 1);
+}
+\end{minted}
+\subsection*{/charcount/locate.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.ih"
+
+Action CharCount::locate(char ch)
+{
+    if (not d_char_info.ptr)
+        return Action::APPEND;
+    for (size_t index = 0; index != d_char_info.nChar; ++index)
+    {
+        char cur_char = d_char_info.ptr[index].ch;
+        if (cur_char == ch)
+        {
+            d_work_index = index;
+            return Action::ADD;
+        }
+        else if (cur_char > ch)
+        {
+            d_work_index = index;
+            return Action::INSERT;
+        }
+    }
+    return Action::APPEND;
+}
+\end{minted}
+\subsection*{/charcount/raw\_capacity.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charcount.ih"
+
+Char *CharCount::raw_capacity(size_t capacity) const
+{
+    return static_cast<Char *>(operator new(sizeof(CharCount) * capacity));
+}
+\end{minted}
+
+\subsection*{/charinfo/charinfo.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "charinfo.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/charinfo/charinfo.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef CHARINFO_H
+#define CHARINFO_H
+
+#include "../char/char.h"
+#include "../enums/action.h"
+
+struct CharInfo 
+{
+    size_t nChar = 0;
+    Char *ptr = 0;
+};
+
+#endif // CHARINFO_H
+\end{minted}
+
+\subsection*{/enums/action.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef ACTION_H
+#define ACTION_H
+
+enum Action
+{
+    INSERT,
+    ADD,
+    APPEND,
+};
+
+#endif // ACTION_H
+\end{minted}
+
+
+\section*{Exercise 51-todo}
+1. placement new/placement delete
+Does not allocate new memory, expects memory to be prealloacted. Useful for 
+copying data to a new loaction, where the new location is allocated already,
+but initialization at that location is not necessary. e.g.:
+```
+// snippet
+string *mem = get_lotsa_memory();
+for (size_t index = 0; index != some_size; ++index)
+    new(ptr + index * sizeof(string)) string("hi!");
+// usage
+for (size_t index = 0; index != some_size; ++index)
+    mem[index].~string;
+```
+
+
+
+\section*{Exercise 52}
+\subsection*{/strings/strings.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef STRINGS_H
+#define STRINGS_H
+
+#include "../stringsdata/stringsdata.h"
+#include <string>
+#include <istream>
+
+class Strings 
+{
+    size_t d_size;                     // number of stored strings
+    std::string *d_str;                // pointer to `d_str` strings
+    std::string d_empty;
+public:
+    Strings();
+    Strings(std::istream &in);
+    Strings(char **env);
+    Strings(int argc, char *argv[]);
+    ~Strings();
+    size_t size() const;
+    std::string *data();
+    std::string const &at(size_t index) const;
+    std::string &at(size_t index);
+    StringsData release(); // danger! leaks!
+    void add(std::string the_next_string);
+
+private:
+    std::string &at_backdoor(size_t index) const;
+    void realloc(size_t new_size);
+};
+
+#endif // STRINGS_H
+
+\end{minted}
+\subsection*{/strings/destructor.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::~Strings()
+{
+    delete[] d_str;
+}
+\end{minted}
+
+
+\section*{Exercise 53}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings/strings.h"
+#include "filter/filter.h"
+#include <iostream>
+
+extern char **environ;
+
+using namespace std;
+
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main()
+{
+    Strings str(cin);
+    Filter filter(str);
+    filter.display();
+}
+\end{minted}
+\subsection*{/filter/filter.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "filter.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/filter/filter.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef FILTER_H
+#define FILTER_H
+
+#include "../strings/strings.h"
+
+class Filter 
+{
+    Strings const &d_strings; // store a reference because a value is woefully inefficient
+    size_t d_index = 0;
+public:
+    Filter(Strings const &strings);
+    void display();
+private:
+    bool getline(std::string &line);
+};
+
+#endif // FILTER_H
+
+\end{minted}
+\subsection*{/filter/display.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "filter.ih"
+
+void Filter::display()
+{
+    size_t line_num = 0;
+    string line;
+    while (true)
+    {
+        if (not this->getline(line))
+            return; // all lines were empty
+        if (line.find_first_not_of(" \t") != string::npos) // non empty
+            break;
+    }
+    cout << line << '\n';
+
+    size_t n_empty = 0; // number of empty lines
+    while (this->getline(line))
+        if (line.find_first_not_of(" \t") == string::npos)
+            ++n_empty;
+        else
+        {
+            cout << string(n_empty, '\n') << line << '\n';
+            n_empty = 0;
+        }
+}
+
+\end{minted}
+\subsection*{/filter/filter1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "filter.ih"
+
+Filter::Filter(Strings const &strings)
+    :
+        d_strings(strings)
+{}
+
+\end{minted}
+\subsection*{/filter/getline.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "filter.ih"
+
+bool Filter::getline(string &line)
+{
+    if (d_index == d_strings.size())
+        return false;
+    line = d_strings.at(d_index++);
+    return true;
+}
+\end{minted}
+
+\subsection*{/strings/strings.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/strings/strings.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef STRINGS_H
+#define STRINGS_H
+
+#include "../stringsdata/stringsdata.h"
+#include <string>
+#include <istream>
+
+class Strings 
+{
+    size_t d_size = 0;                     // number of stored strings
+    size_t d_capacity = 0;
+    std::string **d_str = 0;               // pointer to `d_str` *string's
+public:
+    Strings();
+    Strings(std::istream &in);
+    Strings(char **env);
+    Strings(int argc, char *argv[]);
+    ~Strings();
+    size_t size() const;
+    std::string **data();
+    std::string const &at(size_t index) const;
+    std::string &at(size_t index);
+    StringsData release(); // danger! leaks!
+    void add(std::string the_next_string);
+
+    size_t capacity() const;
+
+private:
+    // replaces the body of `Strings(char **env)` for reuse
+    void init(int argc, char **argv);
+    void reserve(size_t capacity);
+    void resize(size_t capacity);
+    std::string **raw_pointers(size_t capacity) const;
+    void destroy();
+    void ensure_capacity();
+
+    std::string &at_backdoor(size_t index) const;
+    void realloc(size_t new_size);
+};
+
+#endif // STRINGS_H
+
+\end{minted}
+\subsection*{/strings/add.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+void Strings::add(string the_next_string)
+{
+    ensure_capacity();
+    d_str[d_size] = new string(the_next_string);
+    ++d_size;
+}
+\end{minted}
+\subsection*{/strings/at.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+string &Strings::at(size_t index)
+{
+    return at_backdoor(index);
+}
+\end{minted}
+\subsection*{/strings/at\_backdoor.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+string &Strings::at_backdoor(size_t index) const
+{
+    // return index < d_size ? &d_str[index] : &d_empty;
+    static string empty;
+    return index < d_size ? *(d_str[index]) : empty; 
+}
+
+\end{minted}
+\subsection*{/strings/at\_const.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+string const &Strings::at(size_t index) const
+{
+    return at_backdoor(index);
+}
+\end{minted}
+\subsection*{/strings/data.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+string **Strings::data()
+{
+    return d_str;
+}
+\end{minted}
+\subsection*{/strings/destroy.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+void Strings::destroy()
+{
+    for (size_t index = 0; index != d_size; ++index)
+        delete d_str[index];
+    delete[] d_str;
+}
+\end{minted}
+\subsection*{/strings/destructor.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::~Strings()
+{
+    destroy();
+}
+\end{minted}
+\subsection*{/strings/ensure\_capacity.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+void Strings::ensure_capacity()
+{
+    if (d_capacity <= d_size)
+        resize(d_capacity * 2);
+}
+\end{minted}
+\subsection*{/strings/init.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+void Strings::init(int argc, char **argv)
+{
+    resize(argc);
+    for (char **ptr = argv; ptr != argv + argc; ++ptr)
+        add(string(*ptr));
+}
+\end{minted}
+\subsection*{/strings/raw\_pointers.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+string **Strings::raw_pointers(size_t capacity) const
+{
+
+    return new string*[capacity];
+}
+\end{minted}
+\subsection*{/strings/release.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+StringsData Strings::release()
+{
+    resize(d_size); // scratch all trailing memory
+    StringsData data(d_size, d_str);
+    d_str = 0;
+    d_size = 0;
+    d_capacity = 0;
+    return data;
+}
+\end{minted}
+\subsection*{/strings/reserve.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+// allocates additional capacity, without updating d_capacity, or
+// intializing it. Dangerous and only used by resize
+void Strings::reserve(size_t capacity)
+{
+    string **old = d_str;
+    d_str = raw_pointers(capacity);
+    if (old)
+    {
+        for (size_t index = 0; 
+                    index != capacity and index != d_capacity; 
+                    ++index)
+            d_str[index] = old[index];
+        delete[] old;
+    }
+}
+
+\end{minted}
+\subsection*{/strings/resize.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+
+// reserves capacity, initializes it, then updates d_capacity
+void Strings::resize(size_t capacity)
+{
+    reserve(capacity);
+    if (capacity > d_capacity)
+        for (size_t index = d_capacity; index != capacity; ++index)
+            d_str[index] = new string;
+    d_capacity = capacity;  
+}
+\end{minted}
+\subsection*{/strings/size.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+size_t Strings::size() const
+{
+    return d_size;   
+}
+\end{minted}
+\subsection*{/strings/strings1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings()
+{
+    d_capacity = 1;
+    reserve(1);
+}
+
+\end{minted}
+\subsection*{/strings/strings2.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings(istream &in)
+    :
+        Strings()
+{
+    string line;
+    while (getline(in, line))
+        add(line);
+}
+
+\end{minted}
+\subsection*{/strings/strings3.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings(char **env)
+    :
+        Strings()
+{
+    int amount = 0;
+    while (*(env + amount))
+        ++amount;
+    init(amount, env);
+}
+\end{minted}
+\subsection*{/strings/strings4.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings(int argc, char *argv[])
+    :
+        Strings()
+{
+    init(argc, argv);
+}
+\end{minted}
+
+\subsection*{/stringsdata/stringsdata.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "stringsdata.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/stringsdata/stringsdata.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef STRINGSDATA_H
+#define STRINGSDATA_H
+
+#include <cstddef>
+#include <string>
+
+struct StringsData 
+{
+    size_t size;
+    std::string **ptr;
+
+    StringsData(size_t size, std::string **ptr);
+};
+
+#endif // STRINGSDATA_H
+
+\end{minted}
+\subsection*{/stringsdata/stringsdata1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "stringsdata.ih"
+
+StringsData::StringsData(size_t size, string **ptr)
+    :
+        size(size),
+        ptr(ptr)
+{}
+
+\end{minted}
+
+
+\section*{Exercise 54}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "sort/sort.ih"
+#include <iostream>
+
+using namespace std;
+
+int increasing(string **string1, string **string2);
+
+\end{minted}
+\subsection*{/increasing.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int increasing(string const **string1, string const **string2)
+{
+    return (*string1)->compare(**string2);
+}
+
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main()
+{
+    string strs[] = {"hoi", "wie", "wil", "een", "string"};
+    Sort sorter(&increasing);
+    sorter.sort(strs, 5);
+    for (string str : strs)
+        cout << str << '\n';
+}
+\end{minted}
+\subsection*{/nocasedec.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+
+\end{minted}
+\subsection*{/sort/sort.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "sort.h"
+#include <iostream>
+#include <cstdlib>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/sort/sort.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef SORT_H
+#define SORT_H
+
+#include <string>
+
+class Sort
+{
+    int (*d_fn_ptr)(std::string**, std::string**);
+
+public:
+    Sort(int (*fn_ptr)(std::string**, std::string**));
+    void sort(std::string *start, size_t count) const;
+};
+
+#endif // SORT_H
+
+
+\end{minted}
+\subsection*{/sort/sort.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "sort.ih"
+
+void Sort::sort(std::string *start, size_t count) const
+{   
+    qsort(start, count, sizeof(string *), 
+        reinterpret_cast<int (*)(void const *, void const *)>
+            (d_fn_ptr));
+}
+\end{minted}
+\subsection*{/sort/sort1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "sort.ih"
+
+Sort::Sort(int (*fn_ptr)(std::string**, std::string**))
+    :
+        d_fn_ptr(fn_ptr)
+{}
+
+\end{minted}
+
+
+\section*{Exercise 55}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings/strings.h"
+#include <iostream>
+
+extern char **environ;
+
+using namespace std;
+
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main()
+{
+    // Strings str(environ);
+    // for (size_t index = 0; index != str.size(); ++index)
+    //     cout << str.data()[index] << '\n';
+    
+
+    for (size_t iter = 0; iter != 1000; ++iter)
+    {
+        Strings env(environ);
+
+        for (size_t rept = 0; rept != 100; ++rept)
+        {
+            for (char **ptr = environ; *ptr; ++ptr)
+                env.add(*ptr);
+        }
+    } 
+}
+\end{minted}
+\subsection*{/strings/strings.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/strings/strings.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef STRINGS_H
+#define STRINGS_H
+
+#include "../stringsdata/stringsdata.h"
+#include <string>
+#include <istream>
+
+class Strings 
+{
+    size_t d_size = 0;                    // number of stored strings
+    size_t d_capacity = 0;
+    std::string *d_str = 0;               // pointer to `d_str` *string's
+public:
+    Strings();
+    Strings(std::istream &in);
+    Strings(char **env);
+    Strings(int argc, char *argv[]);
+    ~Strings();
+    size_t size() const;
+    std::string *data();
+    std::string const &at(size_t index) const;
+    std::string &at(size_t index);
+    StringsData release(); // danger! leaks!
+    void add(std::string the_next_string);
+
+    size_t capacity() const;
+
+private:
+    // replaces the body of `Strings(char **env)` for reuse
+    void init(int argc, char **argv);
+    void reserve(size_t capacity);
+    void resize(size_t capacity);
+    std::string *raw_strings(size_t capacity) const;
+    void destroy();
+    void ensure_capacity();
+
+    std::string &at_backdoor(size_t index) const;
+    void realloc(size_t new_size);
+};
+
+#endif // STRINGS_H
+
+\end{minted}
+\subsection*{/strings/add.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+void Strings::add(string the_next_string)
+{
+    ensure_capacity();
+    new(d_str + d_size) string(the_next_string);
+    ++d_size;
+}
+
+\end{minted}
+\subsection*{/strings/at.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+string &Strings::at(size_t index)
+{
+    return at_backdoor(index);
+}
+\end{minted}
+\subsection*{/strings/at\_backdoor.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+string &Strings::at_backdoor(size_t index) const
+{
+    // return index < d_size ? &d_str[index] : &d_empty;
+    static string empty;
+    return index < d_size ? d_str[index] : empty; 
+}
+
+\end{minted}
+\subsection*{/strings/at\_const.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+string const &Strings::at(size_t index) const
+{
+    return at_backdoor(index);
+}
+\end{minted}
+\subsection*{/strings/data.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+string *Strings::data()
+{
+    return d_str;
+}
+\end{minted}
+\subsection*{/strings/destroy.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+void Strings::destroy()
+{
+    for (size_t index = 0; index != d_size; ++index)
+        d_str[index].~basic_string();
+    operator delete(d_str);
+}
+\end{minted}
+\subsection*{/strings/destructor.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::~Strings()
+{
+    destroy();
+}
+\end{minted}
+\subsection*{/strings/ensure\_capacity.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+void Strings::ensure_capacity()
+{
+    if (d_capacity <= d_size)
+        resize(d_capacity * 2);
+}
+\end{minted}
+\subsection*{/strings/init.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+void Strings::init(int argc, char **argv)
+{
+    resize(argc);
+    d_capacity = argc;
+    for (char **ptr = argv; ptr != argv + argc; ++ptr)
+        add(string(*ptr));
+}
+\end{minted}
+\subsection*{/strings/raw\_strings.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+string *Strings::raw_strings(size_t capacity) const
+{
+    return static_cast<string *>(operator new(capacity * sizeof(string)));
+}
+\end{minted}
+\subsection*{/strings/release.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+StringsData Strings::release()
+{
+    resize(d_size); // scratch all trailing memory
+    StringsData data(d_size, d_str);
+    d_str = 0;
+    d_size = 0;
+    d_capacity = 0;
+    return data;
+}
+\end{minted}
+\subsection*{/strings/reserve.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+// allocates additional capacity, without updating d_capacity, or
+// intializing it. Dangerous and only used by resize
+void Strings::reserve(size_t capacity)
+{
+    string *old = d_str;
+
+    d_str = raw_strings(capacity);
+    if (old)
+    {
+        for (size_t index = 0; 
+                    index != capacity and index != d_capacity; 
+                    ++index)
+            // move for fairness in comparison later, alternatively, copy and 
+            // call the destructor on the original, but this is more efficient
+            new(d_str + index) string(move(old[index]));
+        operator delete(old);
+    }
+}
+
+\end{minted}
+\subsection*{/strings/resize.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+
+// reserves capacity, initializes it, then updates d_capacity
+void Strings::resize(size_t capacity)
+{
+    reserve(capacity);
+    if (capacity >= d_capacity)
+        for (size_t index = d_capacity; index != capacity; ++index)
+            new(d_str + index) string;
+    d_capacity = capacity;  
+}
+\end{minted}
+\subsection*{/strings/size.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+size_t Strings::size() const
+{
+    return d_size;   
+}
+\end{minted}
+\subsection*{/strings/strings1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings()
+{
+    d_capacity = 1;
+    d_size = 0;
+    reserve(1);
+}
+
+\end{minted}
+\subsection*{/strings/strings2.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings(istream &in)
+    :
+        Strings()
+{
+    string line;
+    while (getline(in, line))
+        add(line);
+}
+
+\end{minted}
+\subsection*{/strings/strings3.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings(char **env)
+{
+    int amount = 0;
+    while (*(env + amount))
+        ++amount;
+    init(amount, env);
+}
+\end{minted}
+\subsection*{/strings/strings4.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings(int argc, char *argv[])
+    :
+        Strings()
+{
+    init(argc, argv);
+}
+\end{minted}
+
+\subsection*{/stringsdata/stringsdata.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "stringsdata.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/stringsdata/stringsdata.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef STRINGSDATA_H
+#define STRINGSDATA_H
+
+#include <cstddef>
+#include <string>
+
+struct StringsData 
+{
+    size_t size;
+    std::string *ptr;
+
+    StringsData(size_t size, std::string *ptr);
+};
+
+#endif // STRINGSDATA_H
+
+\end{minted}
+\subsection*{/stringsdata/stringsdata1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "stringsdata.ih"
+
+StringsData::StringsData(size_t size, string *ptr)
+    :
+        size(size),
+        ptr(ptr)
+{}
+
+\end{minted}
+
+
+\section*{Exercise 56}
+[luuk@arch_laptop 56]$ time ./program_original 
+
+real    6m3.744s
+user    5m56.094s
+sys     0m7.340s
+[luuk@arch_laptop 56]$ time ./program_double_ptr 
+
+real    0m0.621s
+user    0m0.577s
+sys     0m0.043s
+[luuk@arch_laptop 56]$ time ./program_placement 
+
+real    0m0.352s
+user    0m0.312s
+sys     0m0.040s
+
+
+\section*{Exercise 57}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu/cpu.h"
+// #include "tokenizer/tokenizer.h"
+// #include "memory/memory.h"
+
+using namespace std;
+
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main()
+{
+    Memory memory;              // define the computer's memory
+
+    CPU cpu(memory);            // and its cpu
+
+    cpu.run();                  // start the cpu
+}
+\end{minted}
+\subsection*{/cpu/cpu.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu.h"
+#include <iostream>
+
+using namespace std;
+\end{minted}
+\subsection*{/cpu/cpu.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef INCLUDED_CPU_
+#define INCLUDED_CPU_
+
+#include "../tokenizer/tokenizer.h"     // the Tokenizer is a component of the
+                                        // CPU.
+
+#include "../memory/memory.h"
+
+class CPU
+{
+    enum 
+    {
+        NREGISTERS = 5,             // a..e at indices 0..4, respectively
+        LAST_REGISTER = NREGISTERS - 1
+    };
+
+    struct Operand
+    {
+        OperandType type;
+        int value;
+    };
+        
+    Memory &d_memory;
+    Tokenizer d_tokenizer;
+
+    int d_register[NREGISTERS];
+
+public:
+    CPU(Memory &memory);
+    void run();
+
+private:
+    bool error();           // show 'syntax error', and prepare for the 
+                            // next input line
+
+    bool execute(Opcode opcode);    // perform the action matching opcode
+
+                            // return a value or a register's or 
+                            // memory location's value
+    int dereference(Operand const &value);
+
+    bool rvalue(Operand &lhs);  // retrieve an rvalue operand
+    bool lvalue(Operand &lhs);  // retrieve an lvalue operand
+
+                            // determine 2 operands, lhs must be an lvalue
+    bool operands(Operand &lhs, Operand &rhs);
+
+    bool twoOperands(Operand &lhs, int &lhsValue, int &rhsValue);
+
+                            // store a value in register or memory
+    void store(Operand const &lhs, int value);
+
+    void mov();             // assign a value
+    void add();             // add values
+    void sub();             // subtract values
+    void mul();             // multiply values
+    void div();             // divide values (remainder: last reg.)
+                            // div a b computes a /= b, last reg: %
+    void neg();             // negate a value
+    void dsp();             // display a value
+
+    int static value_fn(Operand val, int registers[NREGISTERS], Memory &mem);
+    int static register_fn(Operand val, int registers[NREGISTERS], Memory &mem);
+    int static memory_fn(Operand val, int registers[NREGISTERS], Memory &mem);
+
+    void static register_store_fn(Operand const &lhs, int value, int registers[NREGISTERS], Memory &memory);
+    void static memory_store_fn(Operand const &lhs, int value, int registers[NREGISTERS], Memory &memory);
+};
+        
+#endif
+\end{minted}
+\subsection*{/cpu/add.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu.ih"
+
+void CPU::add()
+{
+    Operand lhs;
+    int lhsValue;
+    int rhsValue;
+
+    if (not twoOperands(lhs, lhsValue, rhsValue))   // get add's two operands
+        return;                                     // or quit
+
+    store(lhs, lhsValue + rhsValue);            // compute and store the result
+}
+
+
+
+
+\end{minted}
+\subsection*{/cpu/cpu1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+ #include "cpu.ih"
+
+CPU::CPU(Memory &memory)
+:
+    d_memory(memory)            // d_tokenizer is initialized by its default
+{}                              // constructor
+\end{minted}
+\subsection*{/cpu/dereference.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu.ih"
+#include "../enums/enums.h"
+
+int CPU::value_fn(Operand val, int registers[NREGISTERS], Memory &mem)
+{
+    return val.value;
+}
+
+int CPU::register_fn(Operand val, int reg[NREGISTERS], Memory &mem)
+{
+    return reg[val.value];
+}
+
+int CPU::memory_fn(Operand val, int registers[NREGISTERS], Memory &mem)
+{
+    return mem.load(val.value);
+}
+
+int CPU::dereference(Operand const &value)
+{
+    int (*fn_list[3])(Operand op, int list[], Memory &mem) = 
+        {&value_fn, &register_fn, &memory_fn};
+    return (*fn_list[static_cast<int>(value.type)])(value, d_register, d_memory);
+}
+
+\end{minted}
+\subsection*{/cpu/div.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu.ih"
+
+void CPU::div()
+{
+    Operand lhs;
+    int lhsValue;
+    int rhsValue;
+
+    if (not twoOperands(lhs, lhsValue, rhsValue))   // get div's two operands
+        return;                                     // or quit
+
+    if (
+        (
+            lhs.type == OperandType::REGISTER       // lhs cannot be
+            &&                                      // the last register
+            lhs.value == LAST_REGISTER
+        )
+        ||
+        rhsValue == 0                               //  rhs cannot be 0
+    )
+    {
+        error();
+        return;
+    }
+
+    store(lhs, lhsValue / rhsValue);                // compute and store the
+                                                    // result
+
+//  How to handle % -operations:
+//    lhs = Operand{ OperandType::REGISTER, LAST_REGISTER };
+//    store(lhs, lhsValue % rhsValue);
+}
+\end{minted}
+\subsection*{/cpu/dsp.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu.ih"
+
+void CPU::dsp()
+{
+    Operand rhs;
+
+    if (not rvalue(rhs))            // retrieve the last computed value
+        return;
+
+    cout << dereference(rhs) << endl;   // display it.
+}
+\end{minted}
+\subsection*{/cpu/error.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu.ih"
+
+bool CPU::error()
+{
+    cout << "syntax error at line " << d_tokenizer.line() << '\n';
+    return false;
+}
+\end{minted}
+\subsection*{/cpu/execute.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu.ih"
+
+bool CPU::execute(Opcode opcode)
+{
+    if (opcode == Opcode::STOP)
+        return false;
+    if (opcode == Opcode::ERR)
+        return error();
+    void (CPU::*fn_list[7])() = {&CPU::mov, &CPU::add, &CPU::sub, 
+                                 &CPU::mul, &CPU::div, &CPU::neg, &CPU::dsp};
+    (this->*fn_list[static_cast<size_t>(opcode)])();
+    return true;                // continue
+}
+\end{minted}
+\subsection*{/cpu/lvalue.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu.ih"
+
+bool CPU::lvalue(Operand &lhs)
+{
+    if (not rvalue(lhs))                // retrieve lhs's value
+        return false;                   // error if not
+
+                                        // an lvalue itself may not be a VALUE
+    return lhs.type == OperandType::VALUE ? error() : true;
+}   
+\end{minted}
+\subsection*{/cpu/mov.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu.ih"
+
+void CPU::mov()
+{
+    Operand lhs;
+    Operand rhs;
+
+    if (not operands(lhs, rhs))         // need two operands
+        return;
+
+    store(lhs, dereference(rhs));       // store rhs's value at lhs
+}
+
+
+\end{minted}
+\subsection*{/cpu/mul.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu.ih"
+
+void CPU::mul()
+{
+    Operand lhs;
+    int lhsValue;
+    int rhsValue;
+
+    if (not twoOperands(lhs, lhsValue, rhsValue))   // get mul's two operands
+        return;                                     // or quit
+
+    store(lhs, lhsValue * rhsValue);            // compute and store the result
+}
+\end{minted}
+\subsection*{/cpu/neg.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu.ih"
+
+void CPU::neg()
+{
+    Operand lhs;
+
+    if (not lvalue(lhs))            // lhs must accept new values
+        return;
+
+    store(lhs, -dereference(lhs));  // store -lhs's value at value
+}
+\end{minted}
+\subsection*{/cpu/operands.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu.ih"
+
+bool CPU::operands(Operand &lhs, Operand &rhs)
+{
+    bool ret = lvalue(lhs) && rvalue(rhs);  // verity correct operand types
+
+    if (ret)
+    {
+        if (                                // but not memory twice
+            lhs.type == OperandType::MEMORY 
+            && 
+            rhs.type == OperandType::MEMORY
+        )
+            return error();
+    }
+
+    return ret;                             // return true: operands OK
+}
+\end{minted}
+\subsection*{/cpu/run.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu.ih"
+
+void CPU::run()
+{
+    while (execute(d_tokenizer.opcode()))   // eternal loop until done
+        d_tokenizer.reset();                // prepare for the next line
+}
+\end{minted}
+\subsection*{/cpu/rvalue.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu.ih"
+
+bool CPU::rvalue(Operand &rhs)
+{
+    auto token = d_tokenizer.token();           // get the next token
+
+    if (token == OperandType::SYNTAX)           // done on error
+        return error();
+
+    rhs.type = token;
+    rhs.value = d_tokenizer.value();            // retrieve the value
+
+    if (                                        // register/memory indicators
+        (                                       // must be within range ...
+            token == OperandType::REGISTER 
+            && 
+            static_cast<size_t>(rhs.value) > LAST_REGISTER
+        )
+        ||
+        static_cast<size_t>(rhs.value) >= RAM::SIZE
+    )
+        return error();                         // ... or error
+
+    return true;                                // rvalue retrieved
+}
+\end{minted}
+\subsection*{/cpu/store.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu.ih"
+
+void CPU::register_store_fn(Operand const &lhs, 
+                            int value, 
+                            int registers[NREGISTERS], 
+                            Memory &memory)
+{
+    registers[lhs.value] = value;
+}
+
+void CPU::memory_store_fn(Operand const &lhs, 
+                          int value, 
+                          int registers[NREGISTERS], 
+                          Memory &memory)
+{
+    memory.store(lhs.value, value);
+}
+
+void CPU::store(Operand const &lhs, int value)
+{
+    void (*fn_list[2])(Operand const &lhs, 
+                       int value, 
+                       int registers[NREGISTERS], 
+                       Memory &memory) = {register_store_fn, memory_store_fn};
+    fn_list[static_cast<size_t>(lhs.type)];
+}   
+\end{minted}
+\subsection*{/cpu/sub.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu.ih"
+
+void CPU::sub()
+{
+    Operand lhs;
+    int lhsValue;
+    int rhsValue;
+
+    if (not twoOperands(lhs, lhsValue, rhsValue))   // get sub's two operands
+        return;                                     // or quit
+
+    store(lhs, lhsValue - rhsValue);            // compute and store the result
+}
+\end{minted}
+\subsection*{/cpu/two\_operands.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "cpu.ih"
+
+bool CPU::twoOperands(Operand &lhs, int &lhsValue, int &rhsValue)
+{
+    Operand rhs;
+
+    if (not operands(lhs, rhs))             // retrieve two operands
+        return false;
+
+    rhsValue = dereference(rhs);            // store their derefernced values
+    lhsValue = dereference(lhs);
+
+    return true;
+}
+
+
+\end{minted}
+
+\subsection*{/enums/enums.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef INCLUDED_ENUMS_
+#define INCLUDED_ENUMS_
+
+enum RAM
+{
+    SIZE = 20
+};
+
+    // all opcodes recognized by the CPU. They must also be known by the
+    // tokenizer, which is why they are `escalated' to a separate header file.
+enum class Opcode
+{
+    MOV = 0,
+    ADD = 1,
+    SUB = 2,
+    MUL = 3,
+    DIV = 4,
+    NEG = 5,
+    DSP = 6,
+    ERR,
+    STOP,
+};
+
+    // the various operand types
+    // used for array indexing
+enum class OperandType
+{
+    SYNTAX = 10,            // syntax error while specifying an operand
+    REGISTER = 0,           // register index
+    MEMORY = 1,             // memory location (= index)
+    VALUE = 2,              // direct value
+};
+
+#endif
+
+\end{minted}
+
+\subsection*{/memory/memory.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "memory.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/memory/memory.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef INCLUDED_MEMORY_
+#define INCLUDED_MEMORY_
+
+#include <cstddef>              // needed for size_t
+
+#include "../enums/enums.h"
+
+class Memory
+{
+    int d_memory[RAM::SIZE];    // the cpu's memory
+
+    public:
+        int load(size_t address) const;         // return mem[address]'s value
+        void store(size_t address, int value);  // store value at mem[address]
+};
+
+#endif
+
+\end{minted}
+\subsection*{/memory/load.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "memory.ih"
+
+int Memory::load(size_t address) const
+{                           // return mem[address]'s value if address is
+                            // within range, otherwise return 0.
+    return address < RAM::SIZE ? d_memory[address] : 0;
+}
+\end{minted}
+\subsection*{/memory/store.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "memory.ih"
+
+void Memory::store(size_t address, int value)
+{
+    if (address < RAM::SIZE)        // address must be within memory's range
+        d_memory[address] = value;  // if so, store value, otherwise ignore
+}
+
+\end{minted}
+
+\subsection*{/tokenizer/tokenizer.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+ #include "tokenizer.h"
+
+#include <iostream>
+
+using namespace std;
+\end{minted}
+\subsection*{/tokenizer/tokenizer.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef INCLUDED_TOKENIZER_
+#define INCLUDED_TOKENIZER_
+
+#include <string>
+#include <cstddef>
+#include "../enums/enums.h"
+
+class Tokenizer
+{
+    size_t d_line = 1;              // line numbers
+    int d_value;                    // retrieved value
+    std::string d_read;             // retrieved text
+
+    struct OpcodeMap
+    {
+        Opcode opcode;
+        char const *mnemonic;
+    };
+
+    static OpcodeMap const s_opcodeMap[];   // mapping opcode names to Opcode
+    static size_t const s_nOpcodes;         // # opcodes
+
+    public:
+        Opcode opcode();        // return the next opcode
+        OperandType token();    // next operand
+        int value() const;      // value matching the token
+        void reset();           // prepare for the next input
+        size_t line() const;    // line number
+
+    private:
+        bool read();            // true: the next blank-delimited item on a
+                                //       line was retrieved
+
+        bool nextItem();            // true: next item is in d_read
+
+        Opcode findOpcode() const;  // find opcode matching d_read's (or ERR)
+};
+
+inline int Tokenizer::value() const         
+{
+    return d_value;
+}
+
+inline size_t Tokenizer::line() const
+{
+    return d_line;
+}
+
+#endif
+\end{minted}
+\subsection*{/tokenizer/find\_opcode.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "tokenizer.ih"
+
+Opcode Tokenizer::findOpcode() const    // find opcode matching d_read's 
+{                                       // contents
+    for (size_t idx = 0; idx != s_nOpcodes; ++idx)      // inspect all opcode
+    {                                                   // names.
+        if (s_opcodeMap[idx].mnemonic == d_read)        // got one? return the
+            return s_opcodeMap[idx].opcode;             // matching opcode
+    }
+
+    return Opcode::ERR;                                 // or an error
+}
+\end{minted}
+\subsection*{/tokenizer/next\_item.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "tokenizer.ih"
+
+bool Tokenizer::nextItem()
+{
+    while (not read())          // no more info on this line?
+    {
+        if (cin.eof())
+        {
+            cout << "Unexpected EOF at line " << d_line << '\n';
+            return false;
+        }
+        reset();                // then try the next line
+    }        
+
+    return true;                // next item is available
+}
+\end{minted}
+\subsection*{/tokenizer/opcode.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "tokenizer.ih"
+
+Opcode Tokenizer::opcode()
+{
+    while (not read())
+    {
+        if (cin.eof())
+        {
+            cout << "Unexpected EOF at line " << d_line << '\n';
+            return Opcode::STOP;
+        }
+        reset();
+    }        
+
+    for (size_t idx = 0; idx != s_nOpcodes; ++idx)
+    {
+        if (s_opcodeMap[idx].mnemonic == d_read)
+            return s_opcodeMap[idx].opcode;
+    }
+
+    return Opcode::ERR;
+}
+
+\end{minted}
+\subsection*{/tokenizer/opcode\_map.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "tokenizer.ih"
+
+Tokenizer::OpcodeMap const Tokenizer::s_opcodeMap[]
+{
+    {
+        Opcode::MOV,
+        "mov"
+    },
+    {
+        Opcode::ADD,
+        "add"
+    },
+    {
+        Opcode::SUB,
+        "sub"
+    },
+    {
+        Opcode::MUL,
+        "mul"
+    },
+    {
+        Opcode::DIV,
+        "div"
+    },
+    {
+        Opcode::NEG,
+        "neg"
+    },
+    {
+        Opcode::DSP,
+        "dsp"
+    },
+    {
+        Opcode::STOP,
+        "stop"
+    },
+};
+
+size_t const Tokenizer::s_nOpcodes = 
+                    sizeof(s_opcodeMap) / sizeof(Tokenizer::OpcodeMap);
+
+\end{minted}
+\subsection*{/tokenizer/read.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "tokenizer.ih"
+
+bool Tokenizer::read()
+{
+    d_read.clear();                 // clear the buffer
+
+    while (isblank(cin.peek()))     // skip leading spaces/tabs
+        cin.get();
+
+    if (cin.eof())                  // no more input
+        return false;
+
+    while (not isspace(cin.peek())) // eat all non-blanks
+        d_read += cin.get();
+
+    return not d_read.empty();      // true: next item in d_read
+}
+
+\end{minted}
+\subsection*{/tokenizer/reset.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "tokenizer.ih"
+
+void Tokenizer::reset()
+{
+    string line;
+    ++d_line;
+    getline(cin, line);
+}
+\end{minted}
+\subsection*{/tokenizer/token.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "tokenizer.ih"
+
+OperandType Tokenizer::token()
+{
+    if (not read())         // get the operand
+        return OperandType::SYNTAX;
+
+    char first = d_read.front();   // and its first character 
+
+    if (isalpha(first))             // letter: so this is a register
+    {
+        d_value = first - 'a';
+        return OperandType::REGISTER;
+    }
+
+    if (first == '@')               // @ indicates memory address: value next
+    {
+        d_value = stoul(d_read.substr(1));
+        return OperandType::MEMORY;
+    }
+
+    d_value = stol(d_read);
+    return OperandType::VALUE;
+}
+\end{minted}
+
+
+
+\end{document}

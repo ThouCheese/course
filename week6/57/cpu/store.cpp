@@ -1,18 +1,26 @@
 #include "cpu.ih"
 
+void CPU::register_store_fn(Operand const &lhs, 
+                            int value, 
+                            int registers[NREGISTERS], 
+                            Memory &memory)
+{
+    registers[lhs.value] = value;
+}
+
+void CPU::memory_store_fn(Operand const &lhs, 
+                          int value, 
+                          int registers[NREGISTERS], 
+                          Memory &memory)
+{
+    memory.store(lhs.value, value);
+}
+
 void CPU::store(Operand const &lhs, int value)
 {
-    switch (lhs.type)           // store value in a register or in memory
-    {
-        default: // not used, but satisfies the compiler
-        break;
-
-        case OperandType::REGISTER:
-            d_register[lhs.value] = value;
-        break;
-
-        case OperandType::MEMORY:
-            d_memory.store(lhs.value, value);
-        break;
-    }
+    void (*fn_list[2])(Operand const &lhs, 
+                       int value, 
+                       int registers[NREGISTERS], 
+                       Memory &memory) = {register_store_fn, memory_store_fn};
+    fn_list[static_cast<size_t>(lhs.type)];
 }   

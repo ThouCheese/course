@@ -10,14 +10,14 @@ enum RAM
     // tokenizer, which is why they are `escalated' to a separate header file.
 enum class Opcode
 {
+    MOV = 0,
+    ADD = 1,
+    SUB = 2,
+    MUL = 3,
+    DIV = 4,
+    NEG = 5,
+    DSP = 6,
     ERR,
-    MOV,
-    ADD,
-    SUB,
-    MUL,
-    DIV,
-    NEG,
-    DSP,
     STOP,
 };
 
@@ -26,9 +26,9 @@ enum class Opcode
 enum class OperandType
 {
     SYNTAX = 10,            // syntax error while specifying an operand
-    VALUE = 0,              // direct value
-    REGISTER = 1,           // register index
-    MEMORY = 2              // memory location (= index)
+    REGISTER = 0,           // register index
+    MEMORY = 1,             // memory location (= index)
+    VALUE = 2,              // direct value
 };
 
 #endif

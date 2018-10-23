@@ -2,44 +2,12 @@
 
 bool CPU::execute(Opcode opcode)
 {
-    switch (opcode)                 // perform the requested action
-    {
-        case Opcode::ERR:
-            error();
-        break;         
-
-        case Opcode::MOV:
-            mov();
-        break;
-
-        case Opcode::ADD:
-            add();
-        break;
-
-        case Opcode::SUB:
-            sub();
-        break;
-
-        case Opcode::MUL:
-            mul();
-        break;
-
-        case Opcode::DIV:
-            div();
-        break;
-
-        case Opcode::NEG:
-            neg();
-        break;
-
-        case Opcode::DSP:
-            dsp();
-        break;
-
-        case Opcode::STOP:      // until all done
+    if (opcode == Opcode::STOP)
         return false;
-
-    } // switch
-
+    if (opcode == Opcode::ERR)
+        return error();
+    void (CPU::*fn_list[7])() = {&CPU::mov, &CPU::add, &CPU::sub, 
+                                 &CPU::mul, &CPU::div, &CPU::neg, &CPU::dsp};
+    (this->*fn_list[static_cast<size_t>(opcode)])();
     return true;                // continue
 }

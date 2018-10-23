@@ -62,7 +62,9 @@ private:
     int static value_fn(Operand val, int registers[NREGISTERS], Memory &mem);
     int static register_fn(Operand val, int registers[NREGISTERS], Memory &mem);
     int static memory_fn(Operand val, int registers[NREGISTERS], Memory &mem);
-    static int (*fn_list[3])(Operand op, int list[], Memory &mem); 
+
+    void static register_store_fn(Operand const &lhs, int value, int registers[NREGISTERS], Memory &memory);
+    void static memory_store_fn(Operand const &lhs, int value, int registers[NREGISTERS], Memory &memory);
 };
         
 #endif
