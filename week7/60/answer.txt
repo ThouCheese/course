@@ -1,0 +1,1 @@
+The string stream is not cleared. It's state of the stream is still at eof, so requesting a new size_t from it won't return anything meaningful. Therefore, the implementers of stringstream have opted to return 0.

@@ -1,0 +1,1 @@
+This does not work because the fstream has no idea what mode it should operate in. The ofstream has no problem because it is meaningful for it to open in output mode, but for the fstream it is not clear what to do. If we specify what mode the fstream should operate in everything works as expected.
