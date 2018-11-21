@@ -1,0 +1,12 @@
+The results are
+
+```
+constructed
+move constructed
+copy assigned
+move assigned
+destructed
+destructed
+```
+
+Note that constructed is only printed once, so our copy elision works! Thereafter our program produces output that does exactly as expected. Note that this is not a example of correct code, as it contains a use-after-move, but it works for our demonstration purposes.

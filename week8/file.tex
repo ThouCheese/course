@@ -1,0 +1,967 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper, margin=1in]{geometry}
+
+\usepackage{minted}
+\large
+\title{C++ Assignment 3}
+\begin{document}
+\begin{titlepage}
+    \begin{center}
+        \line(1,0){300}\\
+        [0.65cm]
+        \huge{\bfseries Assignment III}\\
+        \line(1,0){300}\\
+        \textsc{\Large C++ Course Part I}\\
+        \textsc{\LARGE \today}\\
+        [5.5cm]     
+    \end{center}
+    \begin{flushright}
+        \textsc{\Large L. Wester\\S2755351}\\
+        [0.5cm]
+    \end{flushright}
+\end{titlepage}
+\section*{Exercise 67}
+\subsection*{/strings/strings.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef INCLUDED_STRINGS_
+#define INCLUDED_STRINGS_
+
+#include <iosfwd>
+
+class Strings
+{
+    size_t d_size = 0;
+    size_t d_capacity = 1;
+    std::string **d_str;            // now a double *
+
+    public:
+        Strings();
+        Strings(Strings const bitand other);
+        Strings(Strings and other);
+
+        Strings(int argc, char *argv[]);
+        Strings(char **environLike);
+
+        ~Strings();
+
+        size_t size() const;
+        size_t capacity() const;
+        std::string const &at(size_t idx) const;    // for const-objects
+        std::string &at(size_t idx);                // for non-const objects
+
+        void add(std::string const &next);          // add another element
+
+        void resize(size_t newSize);
+        void reserve(size_t newCapacity);
+
+        Strings &operator=(Strings const &other);
+        Strings &operator=(Strings &&other);
+        
+    private:
+        std::string &safeAt(size_t idx) const;      // private backdoor
+        std::string **storageArea();                // to store the next str.
+        void destroy();                 
+        std::string **enlarged();                   // to d_capacity
+        std::string **rawPointers(size_t nPointers);
+        void swap(Strings &other);
+};
+
+inline size_t Strings::size() const         // potentially dangerous practice:
+{                                           // inline accessors
+    return d_size;
+}
+
+inline size_t Strings::capacity() const     // potentially dangerous practice:
+{                                           // inline accessors
+    return d_capacity;
+}
+
+inline std::string const &Strings::at(size_t idx) const
+{
+    return safeAt(idx);
+}
+
+inline std::string &Strings::at(size_t idx)
+{
+    return safeAt(idx);
+}
+
+        
+#endif
+
+
+\end{minted}
+\subsection*{/strings/copy.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings(Strings const &other)
+	:
+        Strings()
+{
+    resize(other.d_size);
+    for (size_t index = 0; index < other.d_size; ++index)
+        add(other.at(index));
+}
+\end{minted}
+\subsection*{/strings/move.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings(Strings &&other)
+    :
+        d_size(other.d_size),
+        d_capacity(other.d_capacity),
+        d_str(other.d_str)
+{
+    other.d_str = NULL;
+    other.d_size = 0;
+}
+\end{minted}
+\subsection*{/strings/op\_copy\_assign.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings &Strings::operator=(Strings const &other)
+{
+    Strings copy{other};
+    swap(copy);
+    return *this;
+}
+\end{minted}
+\subsection*{/strings/op\_move\_assign.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings &Strings::operator=(Strings &&other)
+{
+    return *this = Strings(move(other));
+}
+\end{minted}
+\subsection*{/strings/swap.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+void Strings::swap(Strings &other)
+{
+    char bytes[sizeof(Strings)];
+    memcpy(bytes, this, sizeof(Strings));
+    memcpy(this, &other, sizeof(Strings));
+    memcpy(reinterpret_cast<void *>(&other), bytes, sizeof(Strings));
+}
+
+\end{minted}
+
+
+\section*{Exercise 68}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings/strings.h"
+#include <iostream>
+using namespace std;
+extern char **environ;
+
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main(int argc, char const *argv[])
+{
+    if (argc != 2 and argc != 3)
+    {
+        cerr << "Usage: program iterations [move]\n";
+        return 1;
+    }
+    bool move = argc == 3; // don't care what you put there
+    cout << move << '\n';
+    size_t iterations = stoul(argv[1]);
+    Strings strs{iterations, not move};
+    strs.iterate(environ);
+}
+
+\end{minted}
+\subsection*{/strings/strings.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.h"
+#include <string>
+#include <cstring>              // -> memcopy, in swap.cc
+
+#include <iostream>
+
+using namespace std;
+
+
+\end{minted}
+\subsection*{/strings/strings.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef INCLUDED_STRINGS_
+#define INCLUDED_STRINGS_
+
+#include <iosfwd>
+
+class Strings
+{
+    size_t d_size = 0;
+    size_t d_capacity = 1;
+    std::string **d_str;            // now a double *
+    bool d_copy = false;
+    size_t d_n_iter = 0;
+    std::string **(Strings::*d_enlarge_ptr)();
+
+    public:
+        Strings();
+        Strings(Strings const bitand other);
+        Strings(Strings and other);
+
+        Strings(int argc, char *argv[]);
+        Strings(char **environLike);
+        Strings(size_t nIterate, bool copy = true);
+
+        ~Strings();
+
+        size_t size() const;
+        size_t capacity() const;
+        std::string const &at(size_t idx) const;    // for const-objects
+        std::string &at(size_t idx);                // for non-const objects
+
+        void add(std::string const &next);          // add another element
+
+        void resize(size_t newSize);
+        void reserve(size_t newCapacity);
+
+        Strings &operator=(Strings const &other);
+        Strings &operator=(Strings &&other);
+
+        void iterate(char **environLike);
+        
+    private:
+        std::string &safeAt(size_t idx) const;      // private backdoor
+        std::string **storageArea();                // to store the next str.
+        void destroy();                 
+        std::string **enlarge_by_copy();                   // to d_capacity
+        std::string **enlarge_by_move();                   // to d_capacity
+        std::string **rawPointers(size_t nPointers);
+        void swap(Strings &other);
+};
+
+inline size_t Strings::size() const         // potentially dangerous practice:
+{                                           // inline accessors
+    return d_size;
+}
+
+inline size_t Strings::capacity() const     // potentially dangerous practice:
+{                                           // inline accessors
+    return d_capacity;
+}
+
+inline std::string const &Strings::at(size_t idx) const
+{
+    return safeAt(idx);
+}
+
+inline std::string &Strings::at(size_t idx)
+{
+    return safeAt(idx);
+}
+
+        
+#endif
+
+
+\end{minted}
+\subsection*{/strings/add.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+void Strings::add(string const &next)
+{
+    string **tmp = storageArea();
+
+    tmp[d_size] = new string(next);
+
+    if (tmp != d_str)               // destroy old memory if new storageArea 
+    {                               // was allocated
+        destroy();                  // destroy the old string * array
+        d_str = tmp;
+    }
+
+    ++d_size;
+}
+
+\end{minted}
+\subsection*{/strings/copy.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings(Strings const &other)
+	:
+        Strings()
+{
+    resize(other.d_size);
+    for (size_t index = 0; index < other.d_size; ++index)
+        add(other.at(index));
+}
+\end{minted}
+\subsection*{/strings/destroy.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+void Strings::destroy()
+{
+    delete[] d_str;
+}
+
+\end{minted}
+\subsection*{/strings/destructor.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::~Strings()
+{
+    for (; d_size--; )
+        delete d_str[d_size];
+
+    destroy();
+}
+
+\end{minted}
+\subsection*{/strings/enlarge\_by\_copy.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+string **Strings::enlarge_by_copy()
+{
+                                        // new block, doubling the # pointers
+    string **ret = rawPointers(d_capacity);
+
+                                        // copy the existing pointers
+    for (size_t idx = 0; idx != d_size; ++idx)
+        ret[idx] = d_str[idx];
+
+    return ret;
+}
+
+\end{minted}
+\subsection*{/strings/enlarge\_by\_move.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+string **Strings::enlarge_by_move()
+{
+                                        // new block, doubling the # pointers
+    string **ret = rawPointers(d_capacity);
+                                        // copy the existing pointers
+    for (size_t idx = 0; idx != d_size; ++idx)
+        ret[idx] = move(d_str[idx]);
+
+    return ret;
+}
+
+\end{minted}
+\subsection*{/strings/iterate.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+void Strings::iterate(char **environLike)
+{
+    cout << d_n_iter << '\n';
+    while (d_n_iter--)
+    {
+        resize(1);
+        d_size = 0;
+        d_capacity = 1;
+
+        for (size_t iter = 0; *(environLike + iter); ++iter)
+            add(environLike[iter]);
+    }
+}
+
+\end{minted}
+\subsection*{/strings/move.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings(Strings &&other)
+    :
+        d_size(other.d_size),
+        d_capacity(other.d_capacity),
+        d_str(other.d_str)
+{
+    other.d_str = NULL;
+    other.d_size = 0;
+}
+\end{minted}
+\subsection*{/strings/op\_copy\_assign.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings &Strings::operator=(Strings const &other)
+{
+    Strings copy{other};
+    swap(copy);
+    return *this;
+}
+\end{minted}
+\subsection*{/strings/op\_move\_assign.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings &Strings::operator=(Strings &&other)
+{
+    return *this = Strings(move(other));
+}
+\end{minted}
+\subsection*{/strings/rawpointers.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+// static
+string **Strings::rawPointers(size_t nPointers)
+{
+    return new string *[nPointers];
+}
+
+\end{minted}
+\subsection*{/strings/reserve.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+void Strings::reserve(size_t nextCapacity)
+{
+    if (d_capacity < nextCapacity)
+    {
+        while (d_capacity < nextCapacity)
+            d_capacity <<= 1;
+        
+        d_str = (this->*d_enlarge_ptr)();
+    }
+}
+
+\end{minted}
+\subsection*{/strings/resize.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+void Strings::resize(size_t newSize)
+{
+    reserve(newSize);           // make sure there's enough memory
+
+    if (newSize > d_size)       // enlarging? initialize new strings
+    {
+        for (; d_size != newSize; ++d_size)
+            d_str[d_size] = new string;
+    }
+    else if (newSize < d_size)  // shrinking? remove excess strings
+    {
+        for (; d_size-- != newSize; )
+            delete d_str[d_size];
+    }
+}
+
+\end{minted}
+\subsection*{/strings/safeat.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+std::string &Strings::safeAt(size_t idx) const
+{
+    static string empty;
+
+    empty.clear();
+
+    return idx < d_size ? *d_str[idx] : empty;
+}
+
+\end{minted}
+\subsection*{/strings/storagearea.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+string **Strings::storageArea()
+{
+    if (d_size + 1 < d_capacity)        // enough room?
+        return d_str;                   // return the current memory block
+
+    d_capacity <<= 1;                   // double the capacity
+    return (this->*d_enlarge_ptr)();                  // return ptr to the enlarged space
+}
+
+
+\end{minted}
+\subsection*{/strings/strings1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings()
+:
+    d_str(rawPointers(1))
+{}
+
+\end{minted}
+\subsection*{/strings/strings2.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings(int argc, char *argv[])
+:
+    Strings()
+{
+    for (size_t begin = 0, end = argc; begin != end; ++begin)
+        add(argv[begin]);
+}
+
+\end{minted}
+\subsection*{/strings/strings3.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings(char **environLike)
+:
+    Strings()
+{
+    while (*environLike)
+        add(*environLike++);
+}
+
+\end{minted}
+\subsection*{/strings/strings4.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+Strings::Strings(size_t nIterate, bool copy)
+:
+    Strings()
+{
+    d_n_iter = nIterate;
+    d_copy = copy;
+    d_enlarge_ptr = copy ? &Strings::enlarge_by_copy : &Strings::enlarge_by_move;
+}
+\end{minted}
+\subsection*{/strings/swap.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "strings.ih"
+
+void Strings::swap(Strings &other)
+{
+    char bytes[sizeof(Strings)];
+    memcpy(bytes, this, sizeof(Strings));
+    memcpy(this, &other, sizeof(Strings));
+    memcpy(reinterpret_cast<void *>(&other), bytes, sizeof(Strings));
+}
+
+\end{minted}
+
+
+\section*{Exercise 69}
+The results are
+
+```
+constructed
+move constructed
+copy assigned
+move assigned
+destructed
+destructed
+```
+
+Note that constructed is only printed once, so our copy elision works! Thereafter our program produces output that does exactly as expected. Note that this is not a example of correct code, as it contains a use-after-move, but it works for our demonstration purposes.
+
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <iostream>
+
+using namespace std;
+
+struct Demo
+{
+    Demo() { cout << "constructed\n"; }
+    ~Demo() { cout << "destructed\n"; }
+    Demo(Demo &other) { cout << "copy constructed\n"; }
+    Demo(Demo &&other) { cout << "move constructed\n"; }
+
+    void operator=(Demo &other) { cout << "copy assigned\n"; }
+    void operator=(Demo &&other) { cout << "move assigned\n"; }
+};
+
+Demo elides()
+{
+    Demo ret;
+    return ret;
+}
+
+int main(int argc, char const *argv[])
+{
+    Demo demo1 = elides();      // demonstrate elision
+    Demo demo2{move(demo1)};    // demonstrate move constructor
+    demo1 = demo2;              // demonstrate copy assignment
+    demo1 = move(demo2);        // demonstrate move assignment
+}
+
+\end{minted}
+
+\section*{Exercise 71}
+\subsection*{/data/data.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "data.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/data/data.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef DATA_H
+#define DATA_H
+
+#include "strings/strings.h"
+#include <string>
+
+enum DataType
+{
+    STRINGS,
+    STRING,
+    DOUBLE,
+};
+
+union Data
+{
+private:
+    Strings u_words;
+    std::string u_word;
+    double u_value;
+
+    Data();
+public:
+    Data(Strings const &strings);
+    Data(std::string const &str);
+    Data(double value);
+    Data(Data const &data, DataType type);
+    Data(Data &&data, DataType type);
+    ~Data();
+
+    void destroy(DataType type);
+    void copy(DataType type, Data &data, DataType other_type);
+    void move(DataType type, Data &&data, DataType other_type);
+    void swap(DataType type, Data &&data, DataType other_type);
+
+    Strings &get_strings(); // allow modifications
+    std::string &get_string();
+    double &get_value();
+private:
+    void destroy_words();
+    void destroy_word();
+    void destroy_value(); // not necessary, but consistent
+
+    void copy_words(Data const &other);
+    void copy_word(Data const &other);
+    void copy_value(Data const &other);
+
+    static void (Data::*s_copy[])(Data const &other);
+
+};
+
+#endif
+\end{minted}
+\subsection*{/data/data1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "data.ih"
+
+Data::Data(Strings const &strings)
+{
+    u_words = strings;
+}
+\end{minted}
+\subsection*{/data/data2.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "data.ih"
+
+Data::Data(std::string const &string)
+{
+    u_word = string;
+}
+\end{minted}
+\subsection*{/data/data3.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "data.ih"
+
+Data::Data(double value)
+{
+    u_value = value;
+}
+
+\end{minted}
+\subsection*{/data/data\_copy.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "data.ih"
+
+Data::Data(Data const &data, DataType type)
+{
+    (this->*s_copy[static_cast<size_t>(type)])(data);
+}
+\end{minted}
+
+
+\section*{Exercise 73}
+\subsection*{/wrap/wrap.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef WRAP_H
+#define WRAP_H
+
+#include "../data/data.h"
+// #include "../strings/strings.h"
+#include <string>
+typedef int Strings;
+
+class Wrap
+{
+    DataType d_type;
+    Data d_data;
+public:
+    Wrap(Strings &strings);
+    Wrap(std::string &string);
+    Wrap(double value);
+    Wrap(Wrap &other);
+    Wrap(Wrap &&other);
+    ~Wrap();
+
+    Wrap operator=(Wrap &other);
+    Wrap operator=(Wrap &&other);
+
+    DataType get_type() const;
+    Strings const &get_strings() const;
+    std::string const &get_string() const;
+    double get_double() const;
+
+private:
+    void swap(Wrap &other);
+};
+
+#endif
+
+\end{minted}
+
+
+\section*{Exercise 74}
+\subsection*{/wrap/wrap.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "wrap.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/wrap/wrap.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef WRAP_H
+#define WRAP_H
+
+#include "../data/data.h"
+// #include "../strings/strings.h"
+#include <string>
+typedef int Strings;
+
+class Wrap
+{
+    DataType::Data d_data;
+    DataType d_type;
+public:
+    Wrap(Strings const &strings);
+    Wrap(std::string const &str);
+    Wrap(double value);
+    Wrap(Wrap const &other);
+    Wrap(Wrap &&other);
+    ~Wrap();
+
+    Wrap &operator=(Wrap &other);
+    Wrap &operator=(Wrap &&other);
+
+    DataType get_type() const;
+    Strings const &get_strings() const;
+    std::string const &get_string() const;
+    double get_value() const;
+private:
+    void swap(Wrap &other);
+};
+
+#endif
+
+\end{minted}
+\subsection*{/wrap/destructor.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "wrap.ih"
+
+Wrap::~Wrap()
+{
+    switch (d_type)
+    {
+        case DataType::STRINGS:
+            d_data.destroy_words();
+            break;
+        case DataType::STRING:
+            d_data.destroy_word();
+            break;
+        case DataType::DOUBLE:
+            d_data.destroy_value();
+            break;
+    }
+    d_type.~Data();
+}
+\end{minted}
+\subsection*{/wrap/get\_string.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "wrap.ih"
+
+string const &Wrap::get_string() const
+{
+    return d_data.u_word;
+}
+\end{minted}
+\subsection*{/wrap/get\_strings.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "wrap.ih"
+
+Strings const &Wrap::get_strings() const
+{
+    return d_type.u_strings;
+}
+\end{minted}
+\subsection*{/wrap/get\_type.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "wrap.ih"
+
+DataType Wrap::get_type() const
+{
+    return d_type;
+}
+\end{minted}
+\subsection*{/wrap/get\_value.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "wrap.ih"
+
+double Wrap::get_double() const
+{
+    return d_data.u_value;
+}
+\end{minted}
+\subsection*{/wrap/op\_assign\_copy.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "wrap.ih"
+
+Wrap &Wrap::operator=(Wrap const &other)
+{
+    Wrap copy{other};
+    swap(other);
+    return *this;
+}
+
+\end{minted}
+\subsection*{/wrap/op\_assign\_move.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "wrap.ih"
+
+Wrap &Wrap::operator=(Wrap &&other)
+{
+    Wrap copy{move(other)};
+    swap(other);
+    // prevent heap destruction
+    &other = 0;
+    return *this;
+}
+
+\end{minted}
+\subsection*{/wrap/swap.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "wrap.ih"
+
+void Wrap::swap(Wrap &other)
+{
+    char swapspace[sizeof(Wrap)];
+    memcpy(this, &swapspace, sizeof(Wrap));
+    memcpy(&other, this, sizeof(Wrap));
+    memcpy(&swapspace, &other, sizeof(Wrap));
+}
+\end{minted}
+\subsection*{/wrap/wrap1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "wrap.ih"
+
+Wrap::Wrap(Strings const &strings)
+:
+    d_data(strings),
+    d_type(DataType::STRINGS)
+{}
+\end{minted}
+\subsection*{/wrap/wrap2.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "wrap.ih"
+
+Wrap::Wrap(string &const str)
+:
+    d_data(str),
+    d_type(DataType::STRING)
+{}
+\end{minted}
+\subsection*{/wrap/wrap3.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "wrap.ih"
+
+Wrap::Wrap(double value)
+:
+    d_data(value),
+    d_type(DataType::DOUBLE)
+{}
+\end{minted}
+\subsection*{/wrap/wrap\_copy.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "wrap.ih"
+
+Wrap::Wrap(Wrap const &other)
+:
+    d_type(other.d_type)
+{
+    switch (d_type)
+    {
+        case DataType::STRINGS:
+            d_type{other.get_strings()};
+            break;
+        case DataType::STRING:
+            d_type{other.get_string()};
+            break;
+        case DataType::DOUBLE:
+            d_type{other.get_value()};
+            break;
+    }
+}
+
+\end{minted}
+\subsection*{/wrap/wrap\_move.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "wrap.ih"
+
+Wrap::Wrap(Wrap &&wrap)
+:
+    d_type(other.d_type)
+{
+    switch (d_type)
+    {
+        case DataType::STRINGS:
+            d_type{move(other.get_strings())};
+            break;
+        case DataType::STRING:
+            d_type{move(other.get_string())};
+            break;
+        case DataType::DOUBLE:
+            d_type{move(other.get_value())};
+            break;
+    }
+}
+\end{minted}
+
+
+
+\end{document}

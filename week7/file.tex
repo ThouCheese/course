@@ -1,0 +1,594 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[a4paper, margin=1in]{geometry}
+
+\usepackage{minted}
+\large
+\title{C++ Assignment 3}
+\begin{document}
+\begin{titlepage}
+    \begin{center}
+        \line(1,0){300}\\
+        [0.65cm]
+        \huge{\bfseries Assignment III}\\
+        \line(1,0){300}\\
+        \textsc{\Large C++ Course Part I}\\
+        \textsc{\LARGE \today}\\
+        [5.5cm]     
+    \end{center}
+    \begin{flushright}
+        \textsc{\Large L. Wester\\S2755351}\\
+        [0.5cm]
+    \end{flushright}
+\end{titlepage}
+\section*{Exercise 58}
+When the programs are run with the if statement commented in and out (in that order), the results are:
+
+[luuk@arch_desktop 58]$ time ./program 100000000
+
+real    0m0.161s
+user    0m0.161s
+sys 0m0.000s
+[luuk@arch_desktop 58]$ g++ *.cpp -o program
+[luuk@arch_desktop 58]$ time ./program 100000000
+
+real    0m1.994s
+user    0m1.994s
+sys     0m0.000s
+
+Clearly checking whether cout's failbit is set is much faster than letting cout decide whether or not to produce output.
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <iostream>
+
+using namespace std;
+
+void print(size_t number_of_prints, int argc);
+
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main(int argc, char const *argv[])
+{
+    if (argc < 2)
+    {
+        cerr << "Usage: program number\n";
+        return 1;
+    }
+    print(stoul(argv[1]), argc);
+}
+
+\end{minted}
+\subsection*{/print.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+void print(size_t number_of_prints, int argc)
+{
+    ostream out(0);
+    out.rdbuf(cout.rdbuf());
+    out.setstate(ios::failbit);
+    for (size_t iter = 0; iter != number_of_prints; ++iter)
+        // if (out.good())
+            out << "Nr. of command line arguments " << argc << '\n';
+}
+\end{minted}
+
+\section*{Exercise 59}
+This does not work because the fstream has no idea what mode it should operate in. The ofstream has no problem because it is meaningful for it to open in output mode, but for the fstream it is not clear what to do. If we specify what mode the fstream should operate in everything works as expected.
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <fstream>
+using namespace std;
+
+void hello(ostream &out)
+{
+    out << "hello world\n";
+}
+
+int main()
+{
+    ofstream out1{ "/tmp/out1" };
+    hello(out1);
+
+    fstream out2{ "/tmp/out2", fstream::out };
+    hello(out2);
+}
+
+\end{minted}
+
+\section*{Exercise 60}
+The string stream is not cleared. It's state of the stream is still at eof, so requesting a new size_t from it won't return anything meaningful. Therefore, the implementers of stringstream have opted to return 0.
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+// ...
+
+int main(int argc, char **argv)
+{
+    // ...
+  
+    cout << "extracted first number: " << no1 << '\n';
+
+    istr.clear();
+    istr.str(argv[2]);
+    
+    // ...
+}
+
+\end{minted}
+
+\section*{Exercise 61}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <iostream>
+#include <iomanip>
+#include <ctime>
+
+using namespace std;
+
+ostream &now(ostream &os)
+{
+    time_t now = time(0);
+    return os << put_time(localtime(&now), "%a %b %d %T %Y");
+}
+
+int main(int argc, char const *argv[])
+{
+    cout << now << '\n';
+}
+
+\end{minted}
+
+\section*{Exercise 62}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <iostream>
+
+void fun(...);
+
+int main()
+{
+    fun();
+    fun("with functions");
+    fun(1, 2, 3);
+}
+\end{minted}
+
+\section*{Exercise 63}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include <iostream>
+#include <iomanip>
+
+using namespace std;
+
+int main(int argc, char const *argv[])
+{
+    double value = 12.04;
+    ios_base::fmtflags flags{ios::adjustfield | ios::floatfield}; 
+    cout 
+        << setw(15) << value << '\n'
+        << setw(15) << left << value << '\n'
+        << setw(15) << right << value << '\n'
+        << setw(15) << fixed << setprecision(1) << value << '\n'
+        << setw(15) << setprecision(4) << value << '\n'
+        << resetiosflags(flags) << setw(15) << value << '\n';
+}
+
+\end{minted}
+
+\section*{Exercise 65}
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "acct_v3/acct_v3.h"
+#include <iostream>
+
+using namespace std;
+
+void handle_input(bool &all, string &path, int argc, char const *argv[]);
+void print_pacct(bool all, string &path);
+
+\end{minted}
+\subsection*{/handle\_input.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+void handle_input(bool &all, string &path, int argc, char const *argv[])
+{
+    if (argc == 2)
+    {
+        if (argv[1] == string("-a"))
+            all = true;
+        else
+            path = argv[1];        
+    }
+    else if (argc == 3)
+    {
+        if (argv[1] == string("-a"))
+            all = true, path = argv[2];
+        else
+            all = true, path = argv[1];
+    }
+    else if (argc > 3) 
+        cerr << "Usage: program [-a] [path to pacct]\n", exit(1);
+}
+
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main(int argc, char const *argv[])
+{
+    string pacct_path = "/var/log/account/pacct";
+    bool all = false;
+    handle_input(all, pacct_path, argc, argv);
+    print_pacct(all, pacct_path);
+}
+\end{minted}
+\subsection*{/print\_pacct.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+#include <fstream>
+
+void print_pacct(bool all, string &pacct_path)
+{
+    ifstream stream{pacct_path};
+    size_t count = 0;
+    cout << pacct_path << '\n';
+    while (stream)
+    {
+        char bytes[sizeof(ACCT_V3)];
+        for (size_t index = 0; index < sizeof(ACCT_V3); ++index)
+            stream >> bytes[index];
+        ACCT_V3 acct = *reinterpret_cast<ACCT_V3 *>(bytes);
+
+        if (all or acct.ac_exitcode)
+            acct.print();
+    }
+}
+
+\end{minted}
+\subsection*{/acct\_v3/acct\_v3.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "acct_v3.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/acct\_v3/acct\_v3.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef ACCT_V3_H_CPP_
+#define ACCT_V3_H_CPP_
+
+#include "/usr/include/linux/acct.h"
+#include <string>
+
+struct ACCT_V3
+{
+    char   ac_flag;            // Flags
+    char   ac_version;         // Always set to ACCT_VERSION
+    __u16  ac_tty;             // Control Terminal
+    __u32  ac_exitcode;        // Exitcode
+    __u32  ac_uid;             // Real User ID
+    __u32  ac_gid;             // Real Group ID
+    __u32  ac_pid;             // Process ID
+    __u32  ac_ppid;            // Parent Process ID
+    __u32  ac_btime;           // Process Creation Time
+    float  ac_etime;           // Elapsed Time
+    comp_t ac_utime;           // User Time
+    comp_t ac_stime;           // System Time
+    comp_t ac_mem;             // Average Memory Usage
+    comp_t ac_io;              // Chars Transferred
+    comp_t ac_rw;              // Blocks Read or Written
+    comp_t ac_minflt;          // Minor Pagefaults
+    comp_t ac_majflt;          // Major Pagefaults
+    comp_t ac_swaps;           // Number of Swaps
+    char   ac_comm[ACCT_COMM]; // Command Name
+
+    void print() const;
+};
+
+#endif
+
+\end{minted}
+\subsection*{/acct\_v3/print.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "acct_v3.ih"
+#include <csignal>
+
+void ACCT_V3::print() const
+{
+    cout << "'" << ac_comm << "' ";
+
+    switch (ac_exitcode)
+    {
+        case SIGKILL:
+            cout << "SIGKILL";
+            break;
+        case SIGTERM:
+            cout << "SIGTERM";
+            break;
+        default:
+            cout << ac_exitcode;
+    }
+    cout << '\n';
+}
+\end{minted}
+
+
+\section*{Exercise 66}
+atatatatat
+
+\subsection*{/main.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "iohandler/iohandler.h"
+#include <iostream>
+
+using namespace std;
+\end{minted}
+\subsection*{/main.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "main.ih"
+
+int main(int argc, char const *argv[])
+{
+    bool binary = argc == 2 and argv[1] == string("-d");
+    IOHandler reader{binary, "/tmp/file.txt"};
+    reader.start(cin);
+}
+
+\end{minted}
+\subsection*{/basepair/basepair.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "basepair.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/basepair/basepair.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef BASEPAIR_H
+#define BASEPAIR_H
+
+struct BasePair 
+{
+    unsigned d_acid_type : 2;  // no overhead allowed!
+
+    // single letter variables, but confusion not really possible
+    enum {
+        A,
+        C, 
+        T,
+        G,
+    };
+
+    BasePair() = default;
+    BasePair(char ch);
+
+    char to_char() const;
+};
+
+#endif // BASEPAIR_H
+
+\end{minted}
+\subsection*{/basepair/basepair1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "basepair.ih"
+
+BasePair::BasePair(char ch)
+{
+    switch (ch)
+    {
+        case 'a':
+            d_acid_type = A;
+            break;
+        case 'c':
+            d_acid_type = C;
+            break;
+        case 't':
+            d_acid_type = T;
+            break;
+        case 'G':
+            d_acid_type = G;
+            break;
+        default:
+            cout << "illegal case! " << ch << '\n';
+            exit(1); // immediately exit with nonzero code
+    }
+}
+
+\end{minted}
+\subsection*{/basepair/to\_char.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "basepair.ih"
+
+char BasePair::to_char() const
+{
+    switch (d_acid_type) {
+        case A:
+            return 'a';
+        case C:
+            return 'c';
+        case T:
+            return 't';
+        case G:
+            return 'g';
+    }
+}
+\end{minted}
+
+\subsection*{/iohandler/iohandler.ih}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "iohandler.h"
+#include <iostream>
+
+using namespace std;
+
+\end{minted}
+\subsection*{/iohandler/iohandler.h}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#ifndef IOHANDLER_H
+#define IOHANDLER_H
+
+#include "../basepair/basepair.h"
+#include <fstream>
+#include <istream>
+
+// the binary format is as follows:
+//  the head, which contains
+//   'd', followed by the length of the file in basepairs
+//  the body
+//   which contains the binary representation of the base pairs
+
+class IOHandler
+{
+    // stream to the output file
+    std::ofstream d_fstream;
+
+    // points to write_binary or write_human
+    void (IOHandler::*d_write_ptr)(BasePair bases[4]);
+
+    // determines whether the program is writing binary or human
+    bool d_writing_binary;
+
+    // current position
+    size_t d_count = 0;
+
+    // total size of the read file (only used for binary files)
+    size_t d_size = 0;
+public:
+    IOHandler(bool to_binary, std::string const &path);
+    void start(std::istream &is);
+
+private:
+    void close(size_t num_base_pairs);
+
+    void read_binary(std::istream &is); // parses a binary file
+    void read_human(std::istream &is);  // parses a human readable file
+
+    void write_binary(BasePair bases[4]); // writes a binary file
+    void write_human(BasePair bases[4]);  // writes a human readable file
+};
+
+#endif
+\end{minted}
+\subsection*{/iohandler/close.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "iohandler.ih"
+
+void IOHandler::close(size_t num_base_pairs)
+{
+    if (d_writing_binary)
+    {
+        d_fstream.seekp(1);  // go back to the second character
+        d_fstream << num_base_pairs;  // write the length
+    }
+    d_fstream.close();
+}
+\end{minted}
+\subsection*{/iohandler/iohandler1.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "iohandler.ih"
+
+IOHandler::IOHandler(bool to_binary, string const &path)
+    :
+        d_writing_binary(to_binary),
+        d_fstream{path, ofstream::out}
+{
+    cout << d_writing_binary << '\n';
+    d_write_ptr = d_writing_binary ?
+        &IOHandler::write_binary : &IOHandler::write_human;
+}
+
+\end{minted}
+\subsection*{/iohandler/read\_binary.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "iohandler.ih"
+
+// takes an istream to a binary file and moves the istream past the
+// 
+size_t strip_head(istream &is)
+{
+    char letter_b;
+    is >> letter_b;
+    uint64_t size;
+    is >> size;
+    return size;
+}
+
+void IOHandler::read_binary(istream &is)
+{
+    d_size = strip_head(is);
+    char current_char;
+    while (is >> current_char)
+        (this->*d_write_ptr)(reinterpret_cast<BasePair *>(current_char));
+    close(d_count);
+}
+
+\end{minted}
+\subsection*{/iohandler/read\_human.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "iohandler.ih"
+
+void IOHandler::read_human(istream &is)
+{
+    char cur_char;
+    while (not is.eof())
+    {
+        BasePair bases[4];
+        for (size_t iter = 0; iter < 4; ++iter)
+        {
+            is >> cur_char;
+            bases[iter] = BasePair(cur_char);
+        }
+        (this->*d_write_ptr)(bases);
+    }
+}
+\end{minted}
+\subsection*{/iohandler/start.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "iohandler.ih"
+
+void IOHandler::start(istream &is)
+{
+    if (d_writing_binary)
+        d_fstream << 'd' << 0ul;
+
+    if (is.peek() == 'b')
+        read_binary(is);
+    else
+        read_human(is);
+}
+
+\end{minted}
+\subsection*{/iohandler/write\_binary.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "iohandler.ih"
+
+void IOHandler::write_binary(BasePair bases[4])
+{
+    d_fstream << *reinterpret_cast<char *>(bases);
+}
+\end{minted}
+\subsection*{/iohandler/write\_human.cpp}
+\begin{minted}[frame=lines, linenos, fontsize=\large]{c++}
+#include "iohandler.ih"
+
+void IOHandler::write_human(BasePair bases[4])
+{
+    for (size_t iter = 0; iter < 4; ++iter)
+        d_fstream << bases[iter].to_char();
+}
+\end{minted}
+
+
+
+\end{document}

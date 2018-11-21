@@ -10,4 +10,6 @@ sys 0m0.000s
 
 real    0m1.994s
 user    0m1.994s
-sys 0m0.000s
+sys     0m0.000s
+
+Clearly checking whether cout's failbit is set is much faster than letting cout decide whether or not to produce output.

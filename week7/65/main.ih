@@ -1,0 +1,7 @@
+#include "acct_v3/acct_v3.h"
+#include <iostream>
+
+using namespace std;
+
+void handle_input(bool &all, string &path, int argc, char const *argv[]);
+void print_pacct(bool all, string &path);
